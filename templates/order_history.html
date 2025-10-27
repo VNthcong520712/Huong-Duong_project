@@ -1,0 +1,88 @@
+{% extends "shop_base.html" %}
+
+{% block title %}Lịch Sử Đơn Hàng{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Lịch Sử Đơn Hàng</h1>
+
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        {% if orders %}
+        <div class="space-y-6">
+            <!-- Lặp qua từng đơn hàng -->
+            {% for order in orders %}
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <!-- Header của Đơn hàng -->
+                <div class="bg-gray-50 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b">
+                    <div class="space-y-1">
+                        <h2 class="text-lg font-semibold text-gray-900">Mã Đơn Hàng: #{{ order.id }}</h2>
+                        <p class="text-sm text-gray-500">Ngày đặt: {{ order.created_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                    </div>
+                    <div class="mt-3 sm:mt-0">
+                        <span class="text-lg font-bold text-purple-700">{{ "{:,.0f}đ".format(order.total_price) }}</span>
+                    </div>
+                </div>
+                
+                <!-- Nội dung Đơn hàng -->
+                <div class="p-4">
+                    <!-- Trạng thái đơn hàng -->
+                    <div class="mb-4">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Trạng thái:</h3>
+                        {% if order.status == 'pending' %}
+                            <p class="text-lg font-semibold text-yellow-600">Đang chờ xác nhận</p>
+                        {% elif order.status == 'confirmed' %}
+                            <p class="text-lg font-semibold text-green-600">Đã xác nhận</p>
+                            <p class="text-sm text-gray-500">Đơn hàng của bạn đã được xác nhận và đang được chuẩn bị.</p>
+                        {% elif order.status == 'shipped' %}
+                            <p class="text-lg font-semibold text-blue-600">Đang chuyển hàng</p>
+                            <p class="text-sm text-gray-500">Đơn hàng đang trên đường giao đến bạn.</p>
+                        {% elif order.status == 'delivered' %}
+                            <p class="text-lg font-semibold text-gray-700">Đã giao thành công</p>
+                            <p class="text-sm text-gray-500">Cảm ơn bạn đã mua hàng!</p>
+                        {% elif order.status == 'rejected' %}
+                            <p class="text-lg font-semibold text-red-600">Đã hủy</p>
+                            <p class="text-sm text-gray-500">Đơn hàng này đã bị hủy.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <hr class="my-4">
+
+                    <!-- Chi tiết sản phẩm trong đơn hàng -->
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Chi tiết sản phẩm:</h4>
+                    <div class="space-y-3">
+                        {% for item in order.items %}
+                        <div class="flex items-center space-x-4">
+                            {% if item.product %}
+                            <img src="{{ url_for('quanlybanhang.serve_product_upload', filename=item.product.image_filename) }}" 
+                                 alt="{{ item.product.name }}" 
+                                 class="w-16 h-16 rounded-md object-cover border">
+                            <div>
+                                <p class="font-medium text-gray-800">{{ item.product.name }}</p>
+                                <p class="text-sm text-gray-500">Số lượng: {{ item.quantity }}</p>
+                                <p class="text-sm text-gray-500">Giá lúc mua: {{ "{:,.0f}đ".format(item.price_at_purchase) }}</g></p>
+                            </div>
+                            {% else %}
+                            <div class="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                            <p class="text-gray-500 italic">Sản phẩm đã bị xóa</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Nếu không có đơn hàng nào -->
+        <div class="text-center py-10">
+            <i class="fas fa-file-invoice-dollar fa-3x text-gray-300"></i>
+            <h2 class="mt-4 text-xl font-medium text-gray-700">Bạn chưa có đơn hàng nào</h2>
+            <p class="text-gray-500 mt-2">Hãy bắt đầu mua sắm để xem lịch sử đơn hàng của bạn ở đây.</p>
+            <a href="{{ url_for('shop.show_shop_page') }}" class="mt-6 inline-block bg-purple-600 text-white p-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                Bắt đầu Mua sắm
+            </a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

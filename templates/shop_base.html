@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cửa Hàng{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện icon cho nút giỏ hàng/tìm kiếm -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f4f4f5; /* Màu nền xám nhạt */
+        }
+        
+        /* CSS cho ảnh bìa (header image) */
+        #header-image-container {
+            height: 40vh; /* Chiều cao ảnh bìa */
+            background-image: url('https://placehold.co/1920x600/8b5cf6/ffffff?text=Hinh+Nen+Cua+Shop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Tạo hiệu ứng parallax đơn giản */
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Lớp phủ màu tím nhẹ */
+        #header-image-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(139, 92, 246, 0.3); /* Màu tím (purple-500) với 30% opacity */
+            z-index: -1;
+        }
+
+        /* Navbar sẽ "dính" (sticky) ở trên cùng */
+        #main-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(255, 255, 255, 0.9); /* Nền trắng mờ */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* Kiểu cho sidebar widget */
+        .widget {
+            background-color: white;
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .widget-title {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            padding-bottom: 0.75rem; /* pb-3 */
+            border-bottom: 1px solid #e5e7eb; /* border-b */
+            margin-bottom: 1rem; /* mb-4 */
+            color: #4f46e5; /* Màu tím (indigo-600) */
+        }
+    </style>
+    <!-- Chèn block 'head' để các trang con có thể thêm script (ví dụ: shop_product_detail) -->
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+
+    <!-- 1. ẢNH BÌA (HEADER) -->
+    <!-- 1. ẢNH BÌA (HEADER) -->
+	<header id="header-image-container"
+			class="w-full h-64 bg-center bg-cover"
+			style="background-image: url('{{ url_for('static', filename='banner.jpg') }}');">
+		<!-- Có thể thêm Tiêu đề hoặc Slogan ở đây nếu muốn -->
+	</header>
+
+
+    <!-- 2. THANH ĐIỀU HƯỚNG CHÍNH (NAVBAR) -->
+    <nav id="main-navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo/Tên Shop -->
+                <div class="flex items-center">
+                    <a href="{{ url_for('shop.show_shop_page') }}" class="font-bold text-2xl text-purple-700">
+                        HƯỚNG DƯƠNG
+                    </a>
+                </div>
+                
+                <!-- Menu (ĐÃ CẬP NHẬT THEO YÊU CẦU) -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-6">
+                    <a href="{{ url_for('shop.show_shop_page') }}" 
+                       class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-md">
+                       SHOP
+                    </a>
+                    <a href="{{ url_for('shop.pages_page') }}" 
+                       class="text-gray-500 hover:text-purple-600 font-medium px-3 py-2 rounded-md">
+                       GALLERY
+                    </a>
+                    <a href="{{ url_for('shop.contact_page') }}" 
+                       class="text-gray-500 hover:text-purple-600 font-medium px-3 py-2 rounded-md">
+                       CONTACT
+                    </a>
+                </div>
+
+                <!-- Giỏ hàng & Admin (CẬP NHẬT LIÊN KẾT GIỎ HÀNG) -->
+                <div class="flex items-center space-x-4">
+
+					<!-- MỚI: LINK LỊCH SỬ ĐƠN HÀNG (Chỉ hiển thị khi là khách hàng) -->
+                    {% if session['user_id'] and not session['is_admin'] %}
+                        <a href="{{ url_for('shop.order_history_page') }}" class="flex items-center text-gray-700 hover:text-purple-600" title="Đơn hàng của tôi">
+                            <i class="fas fa-history fa-fw"></i>
+                            <span class="hidden sm:inline-block ml-1">Đơn hàng</span>
+                        </a>
+                    {% endif %}
+
+                    <!-- Liên kết đến trang Giỏ hàng mới -->
+                    <a href="{{ url_for('shop.show_cart_page') }}" class="flex items-center text-gray-700 hover:text-purple-600">
+                        <i class="fas fa-shopping-cart fa-fw"></i>
+                        <span class="ml-1">Giỏ hàng</span>
+                        <span id="cart-count-badge" class="ml-1 bg-purple-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                            {{ cart_total_items }}
+                        </span>
+                    </a>
+
+          			<!-- Link Đăng nhập/Admin -->
+                    {% if session['user_id'] %}
+                        {% if session['is_admin'] %}
+                            <a href="{{ url_for('quanlybanhang.main_page') }}" class="text-sm text-gray-500 hover:text-purple-600" title="Trang Quản trị">
+                                <i class="fas fa-user-shield"></i>
+                            </a>
+                        {% else %}
+                             <a href="{{ url_for('quanlybanhang.logout') }}" class="text-sm text-gray-500 hover:text-purple-600" title="Đăng xuất">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('quanlybanhang.show_login_page') }}" class="text-sm text-gray-500 hover:text-purple-600" title="Đăng nhập">
+                           <i class="fas fa-user"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 3. NỘI DUNG CHÍNH (SIDEBAR + CONTENT) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+        <div class="flex flex-col lg:flex-row lg:space-x-8">
+            
+            <!-- SIDEBAR (Bên trái) (CẬP NHẬT: Thêm form tìm kiếm) -->
+            <aside class="w-full lg:w-1/4">
+                <div class="sticky top-20 space-y-6">
+                    
+                    <!-- MỚI: Form Tìm Kiếm -->
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Tìm Kiếm Sản Phẩm</h3>
+                        <!-- Form trỏ về trang chủ shop (GET) -->
+                        <form action="{{ url_for('shop.show_shop_page') }}" method="GET">
+                            <div class="relative">
+                                <input type="text" 
+                                       name="search" 
+                                       placeholder="Tên sản phẩm..."
+                                       value="{{ search_query or '' }}"
+                                       class="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
+                                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Danh Mục Sản Phẩm (Giữ nguyên) -->
+                    <!-- <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Danh Mục</h3>
+                        <nav class="space-y-2">
+                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Spa & Thư Giãn</a>
+                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Chăm Sóc Da</a>
+                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Nến & Tinh Dầu</a>
+                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Quà Tặng</a>
+                        </nav>
+                    </div> -->
+                </div>
+            </aside>
+            
+            <!-- KHU VỰC NỘI DUNG (Bên phải) -->
+            <main class="w-full lg:w-3/4 mt-8 lg:mt-0">
+                <!-- Hiển thị thông báo Flash (nếu có) -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div class="mb-4">
+                    {% for category, message in messages %}
+                      <div class="p-4 rounded-md {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}" role="alert">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                <!-- Nội dung của template con sẽ được chèn vào đây -->
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            © 2025 Dự án Hướng Dương.
+        </div>
+    </footer>
+
+    <!-- Script chung -->
+    <script>
+        // Hàm cập nhật số lượng giỏ hàng trên navbar
+        function updateCartBadge(newCount) {
+            const badge = document.getElementById('cart-count-badge');
+            if (badge) {
+                badge.textContent = newCount;
+            }
+        }
+        
+        // Script cho hiệu ứng fade ảnh bìa khi cuộn
+        const headerImage = document.getElementById('header-image-container');
+        window.addEventListener('scroll', () => {
+            const headerHeight = headerImage.offsetHeight;
+            const opacity = 1 - (window.scrollY / (headerHeight * 0.66));
+            if (opacity >= 0) {
+                headerImage.style.opacity = opacity;
+            } else {
+                headerImage.style.opacity = 0;
+            }
+        });
+    </script>
+</body>
+</html>
+

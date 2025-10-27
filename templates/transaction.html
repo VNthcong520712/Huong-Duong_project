@@ -1,0 +1,180 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Giao Dịch - Quản Lý{% endblock %}
+
+{% block extra_styles %}
+<style> 
+    /* Tùy chỉnh màu sắc cho trạng thái */
+/* ... (Giữ nguyên style) ... */
+    .status-pending { border-color: #fcd34d; background-color: #fefce8; color: #92400e; } /* yellow */
+    .status-confirmed { border-color: #86efac; background-color: #f0fdf4; color: #166534; } /* green */
+    .status-shipped { border-color: #93c5fd; background-color: #eff6ff; color: #1e40af; } /* blue */
+    .status-delivered { border-color: #a8a29e; background-color: #fafaf9; color: #1c1917; } /* stone */
+    .status-rejected { border-color: #fca5a5; background-color: #fef2f2; color: #991b1b; } /* red */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Quản Lý Đơn Hàng</h1>
+
+    <!-- Bảng Danh Sách Đơn Hàng -->
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        <div class="flex flex-col">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã ĐH</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách Hàng</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng Tiền</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thanh Toán</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chi Tiết Đơn</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Đặt</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for order in orders %}
+                                <tr id="order-row-{{ order.id }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ order.id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <!-- ... (Giữ nguyên thông tin khách hàng) ... -->
+                                        <div class="font-medium">{{ order.customer_name }}</div>
+                                        <div class="text-gray-500">{{ order.customer_phone }}</div>
+                                        <div class="text-xs text-gray-500">{{ order.customer_address }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-700">
+                                        {{ "{:,.0f}đ".format(order.total_price) }}
+                                    </td>
+                                    
+                                    <!-- *** START: CẬP NHẬT CỘT THANH TOÁN *** -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% if order.payment_method == 'bank_transfer' %}
+                                            <span class="font-medium text-blue-700">Chuyển khoản</span>
+                                            {% if order.payment_proof_filename %}
+                                                <a href="{{ url_for('quanlybanhang.serve_proof_upload', filename=order.payment_proof_filename) }}" 
+                                                   target="_blank" 
+                                                   class="block mt-2">
+                                                    <img src="{{ url_for('quanlybanhang.serve_proof_upload', filename=order.payment_proof_filename) }}" 
+                                                         alt="Ảnh giao dịch"
+                                                         class="w-20 h-20 object-cover rounded-md shadow-md border hover:border-blue-500 transition-all">
+                                                </a>
+                                            {% else %}
+                                                <p class="text-xs text-red-600 mt-1">(Chưa tải lên ảnh)</p>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="font-medium text-gray-700">Tiền mặt (COD)</span>
+                                        {% endif %}
+                                    </td>
+                                    <!-- *** END: CẬP NHẬT CỘT THANH TOÁN *** -->
+                                    
+                                    <!-- Chi tiết các món hàng -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <ul class="list-disc list-inside">
+                                            {% for item in order.items %}
+                                                <li>{{ item.product.name if item.product else 'Sản phẩm đã xóa' }} (x {{ item.quantity }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ order.created_at.strftime('%d-%m-%Y %H:%M') }}
+                                    </td>
+                                    <!-- Trạng thái (Dropdown CẬP NHẬT) -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <select id="status-select-{{ order.id }}" 
+                                                class="p-2 rounded-md border-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500
+                                                status-{{ order.status }}"
+                                                onchange="updateOrderStatus(this, {{ order.id }})">
+                                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>
+                                                Đang chờ
+                                            </option>
+                                            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>
+                                                Đã xác nhận
+                                            </option>
+                                            <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>
+                                                Đang giao hàng
+                                            </option>
+                                            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>
+                                                Đã giao thành công
+                                            </option>
+                                            <option value="rejected" {% if order.status == 'rejected' %}selected{% endif %}>
+                                                Đã hủy
+                                            </option>
+                                        </select>
+                                        <p id="status-msg-{{ order.id }}" class="text-xs text-green-600 mt-1"></p>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">Chưa có đơn hàng nào.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+        async function updateOrderStatus(selectElement, orderId) {
+            const newStatus = selectElement.value;
+            const msgElement = document.getElementById(`status-msg-${orderId}`);
+            msgElement.textContent = 'Đang cập nhật...';
+            
+            // Cập nhật class
+            selectElement.className = "p-2 rounded-md border-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500";
+            selectElement.classList.add(`status-${newStatus}`);
+
+            try {
+                const response = await fetch(`/quanlybanhang/api/orders/update-status/${orderId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                // *** START: SỬA LỖI KIỂM TRA PHẢN HỒI ***
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    // Nếu không phải JSON, kiểm tra xem có phải lỗi 401 (chưa đăng nhập) không
+                    if (response.status === 401) {
+                         throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang.");
+                    }
+                    // Nếu là lỗi khác, báo lỗi chung
+                    throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON.");
+                }
+                // *** END: SỬA LỖI KIỂM TRA PHẢN HỒI ***
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    msgElement.textContent = 'Đã lưu!';
+                    msgElement.className = 'text-xs text-green-600 mt-1';
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+
+            } catch (error) {
+                msgElement.textContent = `Lỗi: ${error.message}`;
+                msgElement.className = 'text-xs text-red-600 mt-1';
+                
+                // Nếu lỗi, khôi phục lại class cũ (tùy chọn)
+                // selectElement.className = "p-2 rounded-md border-2 shadow-sm ..."; 
+                // selectElement.classList.add(`status-${/* trạng thái cũ */}`);
+            }
+            
+            setTimeout(() => {
+                msgElement.textContent = '';
+            }, 3000); // Tăng thời gian hiển thị thông báo lỗi
+        }
+</script>
+{% endblock %}
+

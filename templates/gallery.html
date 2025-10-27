@@ -1,0 +1,194 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản Lý Thư Viện Ảnh{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Cột trái: Thêm ảnh -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-8 rounded-lg shadow-xl">
+                <!-- ... (Giữ nguyên form) ... -->
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Tải Lên Ảnh Mới</h1>
+                <form id="add-image-form" class="space-y-4">
+                    <div>
+                        <label for="image_file" class="block text-sm font-medium text-gray-700">Chọn Ảnh</label>
+                        <input type="file" id="image_file" name="image_file" accept="image/png, image/jpeg, image/gif" required 
+                               class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+                    <div>
+                        <label for="image_description" class="block text-sm font-medium text-gray-700">Mô tả (tùy chọn)</label>
+                        <input type="text" id="image_description" name="image_description" 
+                               class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors h-12">
+                        Tải Lên
+                    </button>
+                    <div id="add-image-message" class="text-center mt-2 text-sm"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cột phải: Danh sách ảnh -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-8 rounded-lg shadow-xl">
+                <!-- ... (Giữ nguyên danh sách) ... -->
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Thư Viện Ảnh (Trang "Pages")</h1>
+                
+                <div id="image-list-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto pr-2">
+                    <!-- Ảnh sẽ được load ở đây -->
+                    {% if images %}
+                        {% for img in images %}
+                        <div class="relative group" id="image-{{ img.id }}">
+                            <img src="{{ url_for('quanlybanhang.serve_gallery_upload', filename=img.filename) }}" 
+                                 alt="{{ img.description or 'Ảnh thư viện' }}"
+                                 class="w-full h-48 object-cover rounded-lg shadow-md">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <button onclick="deleteImage({{ img.id }})" 
+                                        class="text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            {% if img.description %}
+                            <p class="text-xs text-gray-600 mt-1 italic text-center">{{ img.description }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p id="no-image-msg" class="text-gray-500 col-span-full">Chưa có ảnh nào trong thư viện.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ... (Giữ nguyên phần script của addEventListener) ...
+document.addEventListener('DOMContentLoaded', function() {
+    const addForm = document.getElementById('add-image-form');
+    const addMessage = document.getElementById('add-image-message');
+
+    addForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        addMessage.textContent = 'Đang tải lên...';
+        addMessage.className = 'text-center mt-2 text-sm text-gray-600';
+
+        const formData = new FormData(addForm);
+        
+        try {
+            const response = await fetch("{{ url_for('quanlybanhang.add_gallery_image_api') }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            // Kiểm tra nếu phản hồi không phải JSON (ví dụ: lỗi 401 trả về HTML)
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                 // Nếu hết hạn session, admin_required sẽ trả về 401
+                if(response.status === 401) {
+                    throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang.");
+                } else {
+                    // Lỗi HTML không mong muốn khác
+                    throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON.");
+                }
+            }
+            
+            const data = await response.json();
+
+            if (response.ok) {
+                addMessage.textContent = 'Tải lên thành công!';
+                addMessage.className = 'text-center mt-2 text-sm text-green-600';
+                
+                // Thêm ảnh mới vào danh sách
+                addImageToList(data.image);
+                
+                const noImageMsg = document.getElementById('no-image-msg');
+                if (noImageMsg) {
+                    noImageMsg.remove();
+                }
+                
+                addForm.reset();
+
+            } else {
+                throw new Error(data.message || 'Lỗi không xác định');
+            }
+        } catch (error) {
+            addMessage.textContent = `Lỗi: ${error.message}`;
+            addMessage.className = 'text-center mt-2 text-sm text-red-600';
+        }
+        
+        setTimeout(() => { addMessage.textContent = ''; }, 3000);
+    });
+});
+
+async function deleteImage(imageId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+        return;
+    }
+
+    try {
+        // --- START SỬA LỖI ---
+        // 1. Sửa URL từ /api/images/ -> /api/gallery/
+        // 2. Sửa biến từ image_id -> imageId (để khớp với tham số hàm)
+		const response = await fetch(`/quanlybanhang/api/gallery/delete/${imageId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            // (Không cần gửi body, vì id đã có trong URL)
+        });
+        // --- END SỬA LỖI ---
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            if(response.status === 401) {
+                throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang.");
+            } else {
+                throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON.");
+            }
+        }
+            
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById(`image-${imageId}`).remove();
+            
+            const list = document.getElementById('image-list-container');
+            if (!list.querySelector('.relative')) {
+                list.innerHTML = '<p id="no-image-msg" class="text-gray-500 col-span-full">Chưa có ảnh nào trong thư viện.</p>';
+            }
+            
+        } else {
+            throw new Error(data.message || 'Lỗi không xác định');
+        }
+    } catch (error) {
+        alert(`Lỗi: ${error.message}`);
+    }
+}
+
+function addImageToList(image) {
+    const list = document.getElementById('image-list-container');
+    const descHtml = image.description ? `<p class="text-xs text-gray-600 mt-1 italic text-center">${image.description}</p>` : '';
+    
+    const newImageHtml = `
+    <div class="relative group" id="image-${image.id}">
+        <img src="${image.url}" 
+             alt="${image.description || 'Ảnh thư viện'}"
+             class="w-full h-48 object-cover rounded-lg shadow-md">
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 rounded-lg flex items-center justify-center">
+            <button onclick="deleteImage(${image.id})" 
+                    class="text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+        ${descHtml}
+    </div>
+    `;
+    list.insertAdjacentHTML('afterbegin', newImageHtml);
+}
+</script>
+{% endblock %}

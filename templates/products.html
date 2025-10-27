@@ -1,0 +1,315 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản Lý Sản Phẩm{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Cột trái: Thêm sản phẩm -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-8 rounded-lg shadow-xl">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Thêm Sản Phẩm Mới</h1>
+                <!-- Sửa lại name của các trường -->
+                <form id="add-product-form" class="space-y-4">
+                    <div>
+                        <label for="product_name" class="block text-sm font-medium text-gray-700">Tên Sản Phẩm</label>
+                        <input type="text" id="product_name" name="product_name" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="product_price" class="block text-sm font-medium text-gray-700">Giá Bán (VNĐ)</label>
+                        <input type="number" id="product_price" name="product_price" min="0" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="product_stock" class="block text-sm font-medium text-gray-700">Số Lượng Tồn Kho</label>
+                        <input type="number" id="product_stock" name="product_stock" min="0" value="0" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="product_description" class="block text-sm font-medium text-gray-700">Mô Tả</label>
+                        <textarea id="product_description" name="product_description" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="product_image" class="block text-sm font-medium text-gray-700">Ảnh Sản Phẩm</label>
+                        <input type="file" id="product_image" name="product_image" accept="image/png, image/jpeg, image/gif" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors h-12">
+                        Thêm Sản Phẩm
+                    </button>
+                    <div id="add-product-message" class="text-center mt-2 text-sm"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cột phải: Danh sách sản phẩm -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-8 rounded-lg shadow-xl">
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">Danh Sách Sản Phẩm Hiện Có</h1>
+                <div id="product-list-container" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+                    {% if products %}
+                        {% for product in products %}
+                        <div class="product-item flex items-center justify-between p-4 border rounded-lg" id="product-{{ product.id }}">
+                            <div class="flex items-center space-x-4">
+                                <img src="{{ url_for('quanlybanhang.serve_product_upload', filename=product.image_filename) }}" alt="{{ product.name }}" class="w-20 h-20 rounded-md object-cover">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">{{ product.name }}</h3>
+                                    
+                                    <!-- Form cập nhật giá -->
+                                    <form class="update-price-form flex items-center space-x-2 mt-1">
+                                        <label for="price-{{ product.id }}" class="text-sm">Giá:</label>
+                                        <!-- Sửa name -->
+                                        <input type="number" id="price-{{ product.id }}" name="price-{{ product.id }}" value="{{ product.price }}" min="0" 
+                                               class="w-32 p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <button type="submit" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-md hover:bg-blue-200">Lưu Giá</button>
+                                    </form>
+                                    
+                                    <!-- Form cập nhật tồn kho -->
+                                    <form class="update-stock-form flex items-center space-x-2 mt-1">
+                                        <label for="stock-{{ product.id }}" class="text-sm">Kho:</label>
+                                        <!-- Sửa name -->
+                                        <input type="number" id="stock-{{ product.id }}" name="stock-{{ product.id }}" value="{{ product.stock_quantity }}" min="0" 
+                                               class="w-24 p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <button type="submit" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-md hover:bg-green-200">Lưu Kho</button>
+                                    </form>
+                                    <p class="text-xs text-green-700" id="stock-msg-{{ product.id }}"></p>
+                                    
+                                </div>
+                            </div>
+                            <button onclick="deleteProduct({{ product.id }})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt fa-lg"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p id="no-product-msg" class="text-gray-500">Chưa có sản phẩm nào.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// --- START REFACTOR ---
+
+// Hàm xử lý Cập nhật Giá
+async function handleUpdatePrice(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const productId = formData.get('product_id');
+    const newPrice = formData.get('price-' + productId);
+    
+    try {
+        const response = await fetch("{{ url_for('quanlybanhang.update_product_price_api') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId, new_price: newPrice })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Cập nhật giá thành công!');
+        } else {
+            throw new Error(data.message || 'Lỗi không xác định');
+        }
+    } catch (error) {
+         alert(`Lỗi: ${error.message}`);
+    }
+}
+
+// Hàm xử lý Cập nhật Tồn Kho
+async function handleUpdateStock(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const productId = formData.get('product_id');
+    const newStock = formData.get('stock-' + productId);
+    const msgElement = document.getElementById(`stock-msg-${productId}`);
+    
+    msgElement.textContent = 'Đang lưu...';
+    msgElement.className = 'text-xs text-gray-600';
+
+    try {
+        const response = await fetch("{{ url_for('quanlybanhang.update_product_stock_api') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId, new_stock: newStock })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            msgElement.textContent = 'Đã lưu!';
+            msgElement.className = 'text-xs text-green-700';
+        } else {
+            throw new Error(data.message || 'Lỗi không xác định');
+        }
+    } catch (error) {
+         msgElement.textContent = `Lỗi: ${error.message}`;
+         msgElement.className = 'text-xs text-red-700';
+    }
+    
+    setTimeout(() => { msgElement.textContent = ''; }, 2000);
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Xử lý Thêm Sản Phẩm
+    const addForm = document.getElementById('add-product-form');
+    const addMessage = document.getElementById('add-product-message');
+
+    addForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        addMessage.textContent = 'Đang tải lên...';
+        addMessage.className = 'text-center mt-2 text-sm text-gray-600';
+
+        const formData = new FormData(addForm);
+        
+        try {
+            const response = await fetch("{{ url_for('quanlybanhang.add_product_api') }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            // Thêm kiểm tra content-type
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                 if(response.status === 401) {
+                    throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang.");
+                } else {
+                    throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON.");
+                }
+            }
+            
+            const data = await response.json();
+
+            if (response.ok) {
+                addMessage.textContent = 'Thêm sản phẩm thành công!';
+                addMessage.className = 'text-center mt-2 text-sm text-green-600';
+                
+                addProductToList(data.product);
+                
+                const noProductMsg = document.getElementById('no-product-msg');
+                if (noProductMsg) {
+                    noProductMsg.remove();
+                }
+
+                addForm.reset();
+
+            } else {
+                throw new Error(data.message || 'Lỗi không xác định');
+            }
+        } catch (error) {
+            addMessage.textContent = `Lỗi: ${error.message}`;
+            addMessage.className = 'text-center mt-2 text-sm text-red-600';
+        }
+        
+        setTimeout(() => { addMessage.textContent = ''; }, 3000);
+    });
+
+    // 2. Xử lý Cập nhật Giá (gán hàm đã tạo)
+    document.querySelectorAll('.update-price-form').forEach(form => {
+        form.addEventListener('submit', handleUpdatePrice);
+    });
+
+    // 3. Xử lý Cập nhật Tồn Kho (gán hàm đã tạo)
+    document.querySelectorAll('.update-stock-form').forEach(form => {
+        form.addEventListener('submit', handleUpdateStock);
+    });
+});
+
+// 4. Xử lý Xóa Sản Phẩm (Global function)
+async function deleteProduct(productId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/quanlybanhang/api/products/delete/${productId}`, {
+            method: 'POST' // Không cần body, id đã ở trong URL
+        });
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+             if(response.status === 401) { throw new Error("Phiên đăng nhập đã hết hạn."); }
+             else { throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON."); }
+        }
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById(`product-${productId}`).remove();
+            
+            const list = document.getElementById('product-list-container');
+            if (!list.querySelector('.product-item')) {
+                list.innerHTML = '<p id="no-product-msg" class="text-gray-500">Chưa có sản phẩm nào.</p>';
+            }
+            
+        } else {
+            throw new Error(data.message || 'Lỗi không xác định');
+        }
+    } catch (error) {
+        alert(`Lỗi: ${error.message}`);
+    }
+}
+
+// 5. Hàm helper để thêm sản phẩm mới vào danh sách
+function addProductToList(product) {
+    const list = document.getElementById('product-list-container');
+    const newProductHtml = `
+    <div class="product-item flex items-center justify-between p-4 border rounded-lg" id="product-${product.id}">
+        <div class="flex items-center space-x-4">
+            <img src="${product.image_url}" alt="${product.name}" class="w-20 h-20 rounded-md object-cover">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">${product.name}</h3>
+                
+                <form class="update-price-form flex items-center space-x-2 mt-1">
+                    <label for="price-${product.id}" class="text-sm">Giá:</label>
+                    <input type="number" id="price-${product.id}" name="price-${product.id}" value="${product.price}" min="0" 
+                           class="w-32 p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                    <input type="hidden" name="product_id" value="${product.id}">
+                    <button type="submit" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-md hover:bg-blue-200">Lưu Giá</button>
+                </form>
+                
+                <form class="update-stock-form flex items-center space-x-2 mt-1">
+                    <label for="stock-${product.id}" class="text-sm">Kho:</label>
+                    <input type="number" id="stock-${product.id}" name="stock-${product.id}" value="${product.stock_quantity}" min="0" 
+                           class="w-24 p-1 border border-gray-300 rounded-md shadow-sm text-sm">
+                    <input type="hidden" name="product_id" value="${product.id}">
+                    <button type="submit" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-md hover:bg-green-200">Lưu Kho</button>
+                </form>
+                <p class="text-xs text-green-700" id="stock-msg-${product.id}"></p>
+                
+            </div>
+        </div>
+        <button onclick="deleteProduct(${product.id})" class="text-red-500 hover:text-red-700">
+            <i class="fas fa-trash-alt fa-lg"></i>
+        </button>
+    </div>
+    `;
+    list.insertAdjacentHTML('afterbegin', newProductHtml);
+    
+    // *** SỬA LỖI QUAN TRỌNG: Gán listener cho các form MỚI vừa tạo ***
+    const newProductElement = document.getElementById(`product-${product.id}`);
+    
+    const newPriceForm = newProductElement.querySelector('.update-price-form');
+    newPriceForm.addEventListener('submit', handleUpdatePrice);
+
+    const newStockForm = newProductElement.querySelector('.update-stock-form');
+    newStockForm.addEventListener('submit', handleUpdateStock);
+    
+    // *** ĐÃ XÓA: window.location.reload(); ***
+}
+
+// *** ĐÃ XÓA các hàm global updatePrice/updateStock cũ vì đã được thay thế ***
+
+// --- END REFACTOR ---
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản Lý Tin Nhắn{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* Style cho tin nhắn chưa đọc */
+    .message-unread {
+        background-color: #f3f4f6; /* bg-gray-100 */
+        font-weight: 600; /* font-semibold */
+    }
+    .message-read {
+        background-color: #ffffff; /* bg-white */
+    }
+    /* Mở rộng chi tiết */
+    .message-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Hộp Thư Phản Hồi</h1>
+
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="flex flex-col">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div class="shadow overflow-hidden border-b border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người Gửi</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chủ Đề</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Gửi</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for msg in messages %}
+                                <tr id="message-row-{{ msg.id }}" 
+                                    class="cursor-pointer {{ 'message-unread' if not msg.is_read else 'message-read' }}"
+                                    onclick="toggleMessage({{ msg.id }})">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ msg.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ msg.phone }}</div>
+                                        <div class="text-sm text-gray-500">{{ msg.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ msg.subject or '(Không có chủ đề)' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ msg.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="event.stopPropagation(); deleteMessage({{ msg.id }})" 
+                                                class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash-alt"></i> Xóa
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Hàng chi tiết (bị ẩn) -->
+                                <tr class="bg-gray-50">
+                                    <td colspan="4" class="p-0">
+                                        <div id="message-content-{{ msg.id }}" class="message-content p-6">
+                                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ msg.content }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">Không có tin nhắn nào.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function toggleMessage(messageId) {
+        const contentDiv = document.getElementById(`message-content-${messageId}`);
+        const row = document.getElementById(`message-row-${messageId}`);
+
+        if (contentDiv.style.maxHeight) {
+            // Đã mở, đóng lại
+            contentDiv.style.maxHeight = null;
+        } else {
+            // Đang đóng, mở ra
+            contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
+            
+            // Nếu chưa đọc, đánh dấu là đã đọc
+            if (row.classList.contains('message-unread')) {
+                row.classList.remove('message-unread');
+                row.classList.add('message-read');
+                
+                try {
+                    await fetch(`/quanlybanhang/api/messages/read/${messageId}`, { method: 'POST' });
+                } catch (error) {
+                    console.error('Lỗi khi đánh dấu đã đọc:', error);
+                    // (Tùy chọn) Thêm lại class 'unread' nếu lỗi
+                }
+            }
+        }
+    }
+
+    async function deleteMessage(messageId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/quanlybanhang/api/messages/delete/${messageId}`, { method: 'POST' });
+            if (response.ok) {
+                // Xóa hàng nội dung và hàng tiêu đề
+                document.getElementById(`message-row-${messageId}`).remove();
+                document.getElementById(`message-content-${messageId}`).parentElement.parentElement.remove();
+            } else {
+                const data = await response.json();
+                alert(`Lỗi khi xóa: ${data.message}`);
+            }
+        } catch (error) {
+            console.error('Lỗi khi xóa tin nhắn:', error);
+            alert('Lỗi kết nối khi xóa tin nhắn.');
+        }
+    }
+</script>
+{% endblock %}

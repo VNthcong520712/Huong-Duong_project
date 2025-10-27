@@ -1,0 +1,41 @@
+{% extends "shop_base.html" %}
+
+{% block title %}Thư Viện Ảnh{% endblock %}
+
+{% block content %}
+    <!-- Breadcrumb -->
+    <div class="text-sm text-gray-500 mb-4">
+        You are here: <a href="{{ url_for('shop.show_shop_page') }}" class="text-purple-600 hover:underline">Home</a> &raquo; Pages
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-6 mt-12">Thư Viện Ảnh Của Shop</h1>
+    
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <!-- Lưới hiển thị ảnh (từ CSDL) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {% for image in images %}
+            <div class="rounded-lg shadow-md overflow-hidden group">
+                <a href="{{ url_for('quanlybanhang.serve_gallery_upload', filename=image.filename) }}" data-lightbox="gallery" data-title="{{ image.description or '' }}">
+                    <img src="{{ url_for('quanlybanhang.serve_gallery_upload', filename=image.filename) }}" 
+                         alt="{{ image.description or 'Ảnh thư viện' }}" 
+                         class="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105">
+                </a>
+                {% if image.description %}
+                <div class="p-4 bg-gray-50">
+                    <p class="text-center text-gray-700">{{ image.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 col-span-3 text-center">Hiện chưa có ảnh nào trong thư viện.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+    
+    <!-- Bạn có thể thêm thư viện Lightbox để xem ảnh đẹp hơn -->
+    <!-- Ví dụ: <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet"> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script> -->
+
+{% endblock %}

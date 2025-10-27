@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tiêu đề sẽ được thay đổi bởi các template con -->
+    <title>{% block title %}Hệ Thống Quản Lý{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style> 
+        body { font-family: 'Inter', sans-serif; } 
+        /* Thêm các style dùng chung cho admin ở đây nếu cần */
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar chung (CẬP NHẬT) -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('quanlybanhang.main_page') }}" class="font-bold text-xl">Hệ Thống Quản Lý</a>
+                </div>
+                <!-- Kiểm tra request.path để highlight tab hiện tại -->
+                {% set active_page = request.path %}
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('quanlybanhang.main_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.main_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Trang Chính</a>
+                    
+                    <a href="{{ url_for('quanlybanhang.messages_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.messages_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Tin Nhắn</a>
+
+                    <a href="{{ url_for('quanlybanhang.transaction_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.transaction_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Giao Dịch</a>
+                    
+                    <!-- *** START: THÊM LINK MỚI *** -->
+                    <a href="{{ url_for('quanlybanhang.statistics_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.statistics_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Thống Kê</a>
+                    <!-- *** END: THÊM LINK MỚI *** -->
+                    
+                    <a href="{{ url_for('quanlybanhang.products_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.products_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Sản Phẩm</a>
+                    
+                    <a href="{{ url_for('quanlybanhang.gallery_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.gallery_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Thư Viện Ảnh</a>
+                    
+                    <a href="{{ url_for('quanlybanhang.settings_page') }}" 
+                       class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.settings_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Cài Đặt</a>
+                    
+                    <a href="{{ url_for('quanlybanhang.logout') }}" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Khu vực nội dung chính -->
+    <main>
+        <!-- Hiển thị thông báo Flash (nếu có) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 -mb-4">
+            {% for category, message in messages %}
+              <div class="p-4 rounded-md {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Nội dung của template con sẽ được chèn vào đây -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Script chung (nếu cần) -->
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

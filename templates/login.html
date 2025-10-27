@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập / Đăng ký</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .backdrop-blur-custom {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gray-200 bg-cover bg-center h-screen flex items-center justify-center p-4" 
+      style="background-image: url('/static/login_bg.jpg');">
+
+    <div class="bg-white/80 backdrop-blur-custom p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-md">
+        
+        <div id="tabs-container" class="flex border-b-2 border-gray-200 mb-6">
+            <button id="login-tab" 
+                    class="flex-1 py-3 text-center font-semibold text-indigo-600 border-b-2 border-indigo-600 focus:outline-none"
+                    onclick="showView('login')">
+                Đăng nhập
+            </button>
+            <button id="register-tab" 
+                    class="flex-1 py-3 text-center font-semibold text-gray-500 focus:outline-none"
+                    onclick="showView('register')">
+                Đăng ký
+            </button>
+        </div>
+        
+        <h2 id="form-title" class="text-2xl font-bold text-center text-gray-800 mb-6 hidden"></h2>
+
+        <div id="message-area" class="text-center mb-4 font-medium"></div>
+
+        <form id="login-form" class="space-y-5">
+            <div>
+                <label for="login-phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input type="tel" id="login-phone" name="phone" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="0901234567" required>
+            </div>
+            <div>
+                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                <input type="password" id="login-password" name="password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="••••••••" required>
+            </div>
+            <div class="text-right">
+                <a href="#" onclick="event.preventDefault(); showView('forgot');" 
+                   class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                   Quên mật khẩu?
+                </a>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300">
+                    Đăng nhập
+                </button>
+            </div>
+        </form>
+
+        <form id="register-form" class="space-y-5 hidden">
+             <div>
+                <label for="register-phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input type="tel" id="register-phone" name="phone" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="0901234567" required>
+            </div>
+            <div>
+                <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                <input type="password" id="register-password" name="password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Tối thiểu 8 ký tự, gồm chữ và số" required>
+            </div>
+            <div>
+                <label for="register-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+                <input type="password" id="register-confirm-password" name="confirm_password"
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Nhập lại mật khẩu" required>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300">
+                    Tạo tài khoản
+                </button>
+            </div>
+        </form>
+
+        <form id="forgot-password-form" class="space-y-5 hidden">
+             <div>
+                <label for="forgot-phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại của bạn</label>
+                <input type="tel" id="forgot-phone" name="phone" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Nhập SĐT đã đăng ký" required>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-yellow-500 text-white p-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-300">
+                    Tìm tài khoản
+                </button>
+            </div>
+            <div class="text-center">
+                 <a href="#" onclick="event.preventDefault(); showView('login');" 
+                   class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                   Quay lại Đăng nhập
+                </a>
+            </div>
+        </form>
+        
+        <form id="reset-password-form" class="space-y-5 hidden">
+             <div>
+                <label for="reset-new-password" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                <input type="password" id="reset-new-password" name="new_password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Tối thiểu 8 ký tự, gồm chữ và số" required>
+            </div>
+             <div>
+                <label for="reset-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu mới</label>
+                <input type="password" id="reset-confirm-password" name="confirm_new_password"
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Nhập lại mật khẩu mới" required>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-300">
+                    Cập nhật mật khẩu
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const resetPasswordForm = document.getElementById('reset-password-form');
+        
+        const messageArea = document.getElementById('message-area');
+        const tabsContainer = document.getElementById('tabs-container');
+        const formTitle = document.getElementById('form-title');
+
+        // Biến toàn cục để lưu SĐT khi reset
+        let phoneToReset = null;
+
+        // API Paths
+        const LOGIN_API_PATH = '/quanlybanhang/login';
+        const REGISTER_API_PATH = '/quanlybanhang/register';
+        const REQUEST_RESET_PATH = '/quanlybanhang/request-reset';
+        const RESET_PASSWORD_PATH = '/quanlybanhang/reset-password';
+        
+        // --- CÁC ĐƯỜNG DẪN CHUYỂN HƯỚNG MỚI ---
+        const ADMIN_MAIN_PAGE_PATH = '/quanlybanhang/main-page';
+        const CUSTOMER_SHOP_PATH = '/'; // Trang shop_main (gốc)
+        
+        // --- HÀM VALIDATION MỚI ---
+        /**
+         * Kiểm tra SĐT (bắt đầu bằng 0, đủ 10 số)
+         */
+        function isValidPhone(phone) {
+            const phoneRegex = /^0\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+        
+        /**
+         * Kiểm tra mật khẩu (ít nhất 8 ký tự, có cả chữ và số)
+         * \S là ký tự bất kỳ không phải khoảng trắng (cho phép ký tự đặc biệt)
+         */
+        function isValidPassword(password) {
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[\S]{8,}$/;
+            return passwordRegex.test(password);
+        }
+
+        // --- HẾT HÀM VALIDATION MỚI ---
+        
+        function showView(viewName) {
+            messageArea.textContent = ''; 
+            
+            // Ẩn tất cả các form
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            forgotPasswordForm.classList.add('hidden');
+            resetPasswordForm.classList.add('hidden');
+            
+            // Ẩn/Hiện các thành phần UI chung
+            tabsContainer.classList.add('hidden');
+            formTitle.classList.add('hidden');
+
+            if (viewName === 'login' || viewName === 'register') {
+                tabsContainer.classList.remove('hidden');
+                
+                if(viewName === 'login') {
+                    loginForm.classList.remove('hidden');
+                    loginTab.classList.add('text-indigo-600', 'border-indigo-600');
+                    loginTab.classList.remove('text-gray-500');
+                    registerTab.classList.add('text-gray-500');
+                    registerTab.classList.remove('text-indigo-600', 'border-indigo-600');
+                } else {
+                    registerForm.classList.remove('hidden');
+                    loginTab.classList.remove('text-indigo-600', 'border-indigo-600');
+                    loginTab.classList.add('text-gray-500');
+                    registerTab.classList.add('text-indigo-600', 'border-indigo-600');
+                    registerTab.classList.remove('text-gray-500');
+                }
+            } else if (viewName === 'forgot') {
+                formTitle.textContent = 'Quên Mật Khẩu';
+                formTitle.classList.remove('hidden');
+                forgotPasswordForm.classList.remove('hidden');
+            } else if (viewName === 'reset') {
+                formTitle.textContent = 'Tạo Mật Khẩu Mới';
+                formTitle.classList.remove('hidden');
+                resetPasswordForm.classList.remove('hidden');
+            }
+        }
+
+        // -- Xử lý Form Đăng nhập --
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            messageArea.textContent = '';
+            
+            const phone = e.target.phone.value;
+            const password = e.target.password.value;
+
+            try {
+                const response = await fetch(LOGIN_API_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // *** ĐÃ CẬP NHẬT: KIỂM TRA QUYỀN ADMIN ***
+                    if (data.is_admin) {
+                        // Là admin, chuyển đến trang quản lý
+                        messageArea.textContent = 'Đăng nhập Admin thành công! Đang chuyển hướng...';
+                        messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                        setTimeout(() => window.location.href = ADMIN_MAIN_PAGE_PATH, 1500);
+                    } else {
+                        // Là khách hàng, chuyển đến trang cửa hàng
+                        messageArea.textContent = 'Đăng nhập thành công! Đang chuyển hướng đến cửa hàng...';
+                        messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                        setTimeout(() => window.location.href = CUSTOMER_SHOP_PATH, 1500); 
+                    }
+                } else {
+                    // Sai SĐT/mật khẩu
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+
+        // -- Xử lý Form Đăng ký --
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageArea.textContent = '';
+            messageArea.className = 'text-center mb-4 font-medium text-red-600'; // Mặc định là lỗi
+
+            const phone = e.target.phone.value;
+            const password = e.target.password.value;
+            const confirmPassword = e.target.confirm_password.value;
+
+            // --- KIỂM TRA MỚI ---
+            if (!isValidPhone(phone)) {
+                messageArea.textContent = 'Lỗi: SĐT phải bắt đầu bằng 0 và có 10 chữ số.';
+                return;
+            }
+
+            if (!isValidPassword(password)) {
+                messageArea.textContent = 'Lỗi: Mật khẩu phải ít nhất 8 ký tự, chứa cả chữ và số.';
+                return;
+            }
+            // --- HẾT KIỂM TRA MỚI ---
+
+            if (password !== confirmPassword) {
+                messageArea.textContent = 'Lỗi: Mật khẩu xác nhận không khớp!';
+                return;
+            }
+
+            try {
+                const response = await fetch(REGISTER_API_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await response.json();
+                if (response.status === 201) {
+                    messageArea.textContent = 'Đăng ký thành công! Vui lòng chuyển sang tab Đăng nhập.';
+                    messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                    setTimeout(() => showView('login'), 2000); 
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+
+        // -- Xử lý Form Quên Mật Khẩu (Bước 1) --
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageArea.textContent = 'Đang kiểm tra...';
+            messageArea.className = 'text-center mb-4 font-medium text-gray-600';
+
+            const phone = e.target.phone.value;
+            
+            // --- KIỂM TRA MỚI ---
+            // Kiểm tra SĐT ở bước này luôn cho nhanh
+            if (!isValidPhone(phone)) {
+                 messageArea.textContent = 'Lỗi: SĐT phải bắt đầu bằng 0 và có 10 chữ số.';
+                 messageArea.className = 'text-center mb-4 font-medium text-red-600';
+                 return;
+            }
+            // --- HẾT KIỂM TRA MỚI ---
+
+            try {
+                const response = await fetch(REQUEST_RESET_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    messageArea.textContent = data.message;
+                    messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                    phoneToReset = phone; // Lưu SĐT để dùng ở bước 2
+                    setTimeout(() => showView('reset'), 1500); // Chuyển sang form tạo mật khẩu mới
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+        
+        // -- Xử lý Form Tạo Mật Khẩu Mới (Bước 2) --
+        resetPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageArea.textContent = '';
+            messageArea.className = 'text-center mb-4 font-medium text-red-600'; // Mặc định là lỗi
+            
+            const newPassword = e.target.new_password.value;
+            const confirmNewPassword = e.target.confirm_new_password.value;
+
+            // --- KIỂM TRA MỚI ---
+            if (!isValidPassword(newPassword)) {
+                messageArea.textContent = 'Lỗi: Mật khẩu mới phải ít nhất 8 ký tự, chứa cả chữ và số.';
+                return;
+            }
+            // --- HẾT KIỂM TRA MỚI ---
+
+            if (newPassword !== confirmNewPassword) {
+                messageArea.textContent = 'Lỗi: Mật khẩu xác nhận không khớp!';
+                return;
+            }
+            
+            if (!phoneToReset) {
+                 messageArea.textContent = 'Lỗi: Không tìm thấy SĐT. Vui lòng thử lại từ đầu.';
+                 setTimeout(() => showView('forgot'), 2000);
+                 return;
+            }
+
+            try {
+                const response = await fetch(RESET_PASSWORD_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneToReset, new_password: newPassword })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    messageArea.textContent = data.message;
+                    messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                    phoneToReset = null; // Xóa SĐT sau khi hoàn tất
+                    setTimeout(() => showView('login'), 2000); // Quay về trang đăng nhập
+                } else {
+                    // Lỗi trả về từ server (ví dụ: trùng mật khẩu cũ)
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+    </script>
+</body>
+</html>

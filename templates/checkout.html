@@ -1,0 +1,259 @@
+{% extends "shop_base.html" %}
+
+{% block title %}Thanh Toán{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Thanh Toán</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Cột trái: Thông tin khách hàng -->
+        <div class="bg-white p-8 rounded-lg shadow-xl">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Thông tin Giao Hàng</h2>
+            
+            <!-- Quan trọng: Sửa đổi <form> tag -->
+            <!-- Bỏ id="checkout-form", vì chúng ta sẽ đặt ID cho form ở cột phải -->
+            <form id="delivery-info-form" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Họ và Tên</label>
+                    <input type="text" id="name" name="name" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                    <input type="tel" id="phone" name="phone" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                </div>
+
+                <div>
+                    <label for="address" class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                    <textarea id="address" name="address" rows="3" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"></textarea>
+                </div>
+                
+                <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700">Ghi chú (tùy chọn)</label>
+                    <textarea id="notes" name="notes" rows="2" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Cột phải: Tóm tắt đơn hàng (CẬP NHẬT) -->
+        <!-- Bọc toàn bộ cột phải trong một <form> tag -->
+        <form id="checkout-form" class="bg-white p-8 rounded-lg shadow-xl h-fit">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Đơn Hàng Của Bạn</h2>
+
+            <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 border-b pb-4">
+                {% if items %}
+                    {% for item in items %}
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-800">
+                            {{ item.name }} 
+                            <span class="text-gray-500 font-medium">x {{ item.quantity }}</span>
+                        </span>
+                        <span class="font-medium text-gray-700">{{ "{:,.0f}đ".format(item.subtotal) }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-500">Không có sản phẩm nào được chọn.</p>
+                {% endif %}
+            </div>
+            
+            <div class="space-y-4">
+                <!-- ... (Giữ nguyên Tạm tính, Phí vận chuyển, Tổng cộng) ... -->
+                <div class="flex justify-between text-gray-600">
+                    <span>Tạm tính</span>
+                    <span>{{ "{:,.0f}đ".format(total) }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Phí vận chuyển</span>
+                    <span>(Sẽ thông báo sau)</span>
+                </div>
+                <hr>
+                <div class="flex justify-between text-xl font-bold text-gray-900">
+                    <span>Tổng cộng</span>
+                    <span class="text-purple-700">{{ "{:,.0f}đ".format(total) }}</span>
+                </div>
+            </div>
+            
+            <!-- CHỌN PHƯƠNG THỨC THANH TOÁN -->
+            <div class="mt-8">
+                <h3 class="font-semibold text-gray-700 mb-3">Phương thức thanh toán</h3>
+                <div class="space-y-3">
+                    <!-- 1. Tiền mặt (COD) -->
+                    <label for="pay_cash" class="flex items-center p-4 border rounded-md has-[:checked]:bg-purple-50 has-[:checked]:border-purple-500 cursor-pointer">
+                        <input type="radio" id="pay_cash" name="payment_method" value="cash" class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500" checked onchange="togglePaymentDetails(false)">
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-800">Thanh toán khi nhận hàng (COD)</p>
+                            <p class="text-sm text-gray-500 mt-1">Bạn sẽ thanh toán bằng tiền mặt khi nhân viên giao hàng.</p>
+                        </div>
+                    </label>
+                    
+                    <!-- 2. Chuyển khoản -->
+                    <label for="pay_bank" class="flex items-center p-4 border rounded-md has-[:checked]:bg-purple-50 has-[:checked]:border-purple-500 cursor-pointer">
+                        <input type="radio" id="pay_bank" name="payment_method" value="bank_transfer" class="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500" onchange="togglePaymentDetails(true)">
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-800">Chuyển khoản ngân hàng</p>
+                            <p class="text-sm text-gray-500 mt-1">Chuyển khoản trực tiếp. Vui lòng tải lên ảnh giao dịch.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- KHU VỰC HIỂN THỊ QR (CẬP NHẬT) -->
+            <div id="bank-details" class="mt-6 p-4 bg-gray-50 rounded-lg border border-purple-200 hidden">
+                {% if payment_info and (payment_info.qr_code_filename or payment_info.account_number) %}
+                    {% if payment_info.qr_code_filename %}
+                    <p class="text-sm text-center text-gray-700 mb-2">Quét mã QR để thanh toán:</p>
+                    <img src="{{ url_for('quanlybanhang.serve_payment_upload', filename=payment_info.qr_code_filename) }}" 
+                         alt="Mã QR Thanh toán"
+                         class="w-48 h-48 mx-auto rounded-md shadow-md">
+                    {% endif %}
+                    
+                    <div class="mt-4 text-sm text-gray-800 space-y-1">
+                        <p><strong>Ngân hàng:</strong> {{ payment_info.bank_name }}</p>
+                        <p><strong>Chủ TK:</strong> {{ payment_info.account_holder }}</p>
+                        <p><strong>Số TK:</strong> {{ payment_info.account_number }}</p>
+                        
+                        <!-- *** START: NỘI DUNG CHUYỂN KHOẢN *** -->
+                        {% set memo_parts = [] %}
+                        {% for item in items %}
+                            {% set _ = memo_parts.append(item.id ~ 'SHOPHUONGDUONG' ~ item.quantity) %}
+                        {% endfor %}
+                        {% set memo = memo_parts|join('-') %}
+                        
+                        <p class="font-medium"><strong>Nội dung:</strong> 
+                            <code id="transfer-memo" class="text-red-600 bg-red-100 p-1 rounded">{{ memo or 'Vui_long_nhap_SDT' }}</code>
+                        </p>
+                        <!-- *** END: NỘI DUNG CHUYỂN KHOẢN *** -->
+                    </div>
+
+                    <!-- *** START: THÊM Ô UPLOAD ẢNH *** -->
+                    <div class="mt-4">
+                        <label for="payment_proof_file" class="block text-sm font-medium text-gray-700">Tải lên ảnh Giao dịch</label>
+                        <input type="file" id="payment_proof_file" name="payment_proof" accept="image/png, image/jpeg, image/gif"
+                               class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                        <p class="text-xs text-gray-500 mt-1">Vui lòng tải lên ảnh chụp màn hình đã chuyển khoản thành công.</p>
+                    </div>
+                    <!-- *** END: THÊM Ô UPLOAD ẢNH *** -->
+                    
+                {% else %}
+                    <p class="text-sm text-center text-red-600">Quản trị viên chưa cập nhật thông tin chuyển khoản.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Nút bấm được liên kết với form="checkout-form" -->
+            <button type="submit" id="checkout-button"
+                    class="w-full bg-green-600 text-white p-4 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-300 mt-8 text-lg"
+                    {% if not items %}disabled{% endif %}>
+                Xác Nhận Đặt Hàng
+            </button>
+            <div id="checkout-message" class="text-center mt-3 font-medium"></div>
+        </form>
+        
+    </div>
+
+    <!-- SCRIPT CẬP NHẬT -->
+    <script>
+        function togglePaymentDetails(show) {
+            const bankDetails = document.getElementById('bank-details');
+            const proofInput = document.getElementById('payment_proof_file');
+            if (show) {
+                bankDetails.classList.remove('hidden');
+                proofInput.required = true; // Bắt buộc tải ảnh lên nếu chọn chuyển khoản
+            } else {
+                bankDetails.classList.add('hidden');
+                proofInput.required = false; // Không bắt buộc
+            }
+        }
+
+        // *** START: SỬA LỖI HÀM SUBMIT ***
+        // Lắng nghe sự kiện submit của form cột phải
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Ngăn form gửi theo cách truyền thống
+            submitCheckout(); // Gọi hàm xử lý logic của chúng ta
+        });
+
+        async function submitCheckout() {
+            const deliveryForm = document.getElementById('delivery-info-form');
+            const checkoutForm = document.getElementById('checkout-form');
+            const messageArea = document.getElementById('checkout-message');
+            const button = document.getElementById('checkout-button');
+
+            // 1. Kiểm tra form thông tin giao hàng (cột trái)
+            if (!deliveryForm.checkValidity()) {
+                messageArea.textContent = 'Vui lòng điền đầy đủ thông tin giao hàng.';
+                messageArea.className = 'text-center mt-3 font-medium text-red-600';
+                deliveryForm.reportValidity(); 
+                return;
+            }
+            
+            // 2. Kiểm tra form thanh toán (cột phải), chủ yếu là check file upload
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            const proofInput = document.getElementById('payment_proof_file');
+            if (paymentMethod === 'bank_transfer' && !proofInput.files[0]) {
+                 messageArea.textContent = 'Vui lòng tải lên ảnh bằng chứng giao dịch.';
+                 messageArea.className = 'text-center mt-3 font-medium text-red-600';
+                 proofInput.focus();
+                 return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Đang xử lý...';
+            messageArea.textContent = 'Đang gửi đơn hàng...';
+            messageArea.className = 'text-center mt-3 font-medium text-gray-600';
+
+            // 3. Tạo FormData và gộp dữ liệu từ CẢ HAI FORM
+            const formData = new FormData();
+            
+            // Lấy dữ liệu từ form giao hàng (cột trái)
+            new FormData(deliveryForm).forEach((value, key) => {
+                formData.append(key, value);
+            });
+            
+            // Lấy dữ liệu từ form thanh toán (cột phải)
+            formData.append('payment_method', paymentMethod);
+            if (proofInput.files[0]) {
+                formData.append('payment_proof', proofInput.files[0]);
+            }
+            
+            // 4. Gọi API
+            try {
+                const response = await fetch("{{ url_for('shop.process_checkout_api') }}", {
+                    method: 'POST',
+                    // *** QUAN TRỌNG: Bỏ header 'Content-Type' ***
+                    // Trình duyệt sẽ tự động đặt 'multipart/form-data'
+                    body: formData 
+                });
+
+                // *** Sửa lỗi: Thêm kiểm tra content-type trước khi .json() ***
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                   throw new Error("Lỗi máy chủ: Phản hồi không phải là JSON.");
+                }
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    messageArea.textContent = 'Đặt hàng thành công! Đang chuyển hướng...';
+                    messageArea.className = 'text-center mt-3 font-medium text-green-600';
+                    
+                    updateCartBadge(data.cart_total_items || 0); 
+                    
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('shop.show_shop_page') }}";
+                    }, 2000);
+
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mt-3 font-medium text-red-600';
+                button.disabled = false;
+                button.textContent = 'Xác Nhận Đặt Hàng';
+            }
+        }
+        // *** END: SỬA LỖI HÀM SUBMIT ***
+    </script>
+{% endblock %}
+

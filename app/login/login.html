@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập / Đăng ký</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Sử dụng font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Tạo hiệu ứng mờ cho nền của box */
+        .backdrop-blur-custom {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<!-- 
+  Phần body này sẽ có hình nền. 
+  Hãy thay thế URL trong 'style' bằng đường dẫn đến hình nền của bạn.
+-->
+<body class="bg-gray-200 bg-cover bg-center h-screen flex items-center justify-center p-4" 
+      style="background-image: url('https://placehold.co/1920x1080/6366f1/e0e7ff?text=Hinh+Nen+Cua+Ban')">
+
+    <!-- Tiền cảnh: Ô chứa nội dung -->
+    <div class="bg-white/80 backdrop-blur-custom p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-md">
+        
+        <!-- Tab chuyển đổi Đăng nhập / Đăng ký -->
+        <div class="flex border-b-2 border-gray-200 mb-6">
+            <button id="login-tab" 
+                    class="flex-1 py-3 text-center font-semibold text-indigo-600 border-b-2 border-indigo-600 focus:outline-none"
+                    onclick="showTab('login')">
+                Đăng nhập
+            </button>
+            <button id="register-tab" 
+                    class="flex-1 py-3 text-center font-semibold text-gray-500 focus:outline-none"
+                    onclick="showTab('register')">
+                Đăng ký
+            </button>
+        </div>
+
+        <!-- Vùng hiển thị thông báo lỗi hoặc thành công -->
+        <div id="message-area" class="text-center mb-4 font-medium"></div>
+
+        <!-- Form Đăng nhập -->
+        <form id="login-form" class="space-y-5">
+            <div>
+                <label for="login-phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input type="tel" id="login-phone" name="phone" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="0901234567" required>
+            </div>
+            <div>
+                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                <input type="password" id="login-password" name="password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="••••••••" required>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-300">
+                    Đăng nhập
+                </button>
+            </div>
+            <div class="text-center">
+                <a href="#" class="text-sm text-indigo-600 hover:underline">Quên mật khẩu?</a>
+            </div>
+        </form>
+
+        <!-- Form Đăng ký -->
+        <form id="register-form" class="space-y-5 hidden">
+            <div>
+                <label for="register-phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input type="tel" id="register-phone" name="phone" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="0901234567" required>
+            </div>
+            <div>
+                <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                <input type="password" id="register-password" name="password" 
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Tạo mật khẩu" required>
+            </div>
+            <div>
+                <label for="register-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+                <input type="password" id="register-confirm-password" name="confirm_password"
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                       placeholder="Nhập lại mật khẩu" required>
+            </div>
+            <div>
+                <button type="submit" 
+                        class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300">
+                    Tạo tài khoản
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const messageArea = document.getElementById('message-area');
+
+        // Hàm chuyển đổi giữa các tab
+        function showTab(tabName) {
+            messageArea.textContent = ''; // Xóa thông báo khi chuyển tab
+            if (tabName === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTab.classList.add('text-indigo-600', 'border-indigo-600');
+                loginTab.classList.remove('text-gray-500');
+                registerTab.classList.add('text-gray-500');
+                registerTab.classList.remove('text-indigo-600', 'border-indigo-600');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                loginTab.classList.remove('text-indigo-600', 'border-indigo-600');
+                loginTab.classList.add('text-gray-500');
+                registerTab.classList.add('text-indigo-600', 'border-indigo-600');
+                registerTab.classList.remove('text-gray-500');
+            }
+        }
+
+        // URL của máy chủ Python (Flask)
+        // Khi chạy tệp app.py, nó sẽ chạy trên cổng 5000
+        const API_URL = 'http://127.0.0.1:5000';
+
+        // Xử lý Form Đăng nhập
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Ngăn form gửi theo cách truyền thống
+            messageArea.textContent = '';
+            
+            const phone = e.target.phone.value;
+            const password = e.target.password.value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageArea.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                    messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                    // Chuyển hướng đến trang chính do máy chủ Flask cung cấp
+                    setTimeout(() => {
+                        window.location.href = `${API_URL}/main-page`;
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+
+        // Xử lý Form Đăng ký
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageArea.textContent = '';
+
+            const phone = e.target.phone.value;
+            const password = e.target.password.value;
+            const confirmPassword = e.target.confirm_password.value;
+
+            if (password !== confirmPassword) {
+                messageArea.textContent = 'Lỗi: Mật khẩu xác nhận không khớp!';
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 201) {
+                    messageArea.textContent = 'Đăng ký thành công! Vui lòng chuyển sang tab Đăng nhập.';
+                    messageArea.className = 'text-center mb-4 font-medium text-green-600';
+                    // Tự động chuyển sang tab đăng nhập
+                    setTimeout(() => showTab('login'), 2000); 
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                messageArea.textContent = `Lỗi: ${error.message}`;
+                messageArea.className = 'text-center mb-4 font-medium text-red-600';
+            }
+        });
+    </script>
+</body>
+</html>

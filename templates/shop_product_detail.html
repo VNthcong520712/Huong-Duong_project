@@ -1,0 +1,160 @@
+{% extends "shop_base.html" %}
+
+{% block title %}{{ product.name }} - Chi tiết sản phẩm{% endblock %}
+
+{% block content %}
+    <!-- Breadcrumb -->
+    <div class="text-sm text-gray-500 mb-4">
+        You are here: <a href="{{ url_for('shop.show_shop_page') }}" class="text-purple-600 hover:underline">Home</a> &raquo; <a href="{{ url_for('shop.show_shop_page') }}" class="text-purple-600 hover:underline">Shop</a> &raquo; {{ product.name }}
+    </div>
+
+    <!-- Nội dung chi tiết sản phẩm -->
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Cột bên trái: Hình ảnh -->
+            <div>
+                <div class="relative">
+                    <img src="{{ url_for('quanlybanhang.serve_product_upload', filename=product.image_filename) }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-auto object-cover rounded-lg shadow-md 
+                                {% if product.stock_quantity <= 0 %} opacity-50 grayscale {% endif %}">
+                    
+                    <!-- Nhãn "Đang nhập hàng" nếu hết hàng -->
+                    {% if product.stock_quantity <= 0 %}
+                    <span class="absolute top-4 left-4 bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-lg z-10">
+                        ĐANG NHẬP HÀNG
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Cột bên phải: Thông tin và Mua hàng -->
+            <div class="flex flex-col justify-between">
+                <div>
+                    <!-- Tên sản phẩm -->
+                    <h1 class="text-4xl font-bold text-gray-900">{{ product.name }}</h1>
+                    
+                    <!-- Giá -->
+                    <p class="mt-4 text-3xl font-bold text-purple-700">
+                        {{ "{:,.0f}đ".format(product.price) }}
+                    </p>
+                    
+                    <!-- Mô tả ngắn (Mô phỏng theo các trang e-commerce) -->
+                    <!-- <p class="mt-4 text-gray-600 leading-relaxed">
+                        {{ product.description | truncate(150, True) }}
+                    </p> -->
+                </div>
+                
+                <!-- Khu vực Thêm vào giỏ (CẬP NHẬT) -->
+                <div class="mt-8">
+                    <!-- Chỉ hiển thị nếu còn hàng -->
+                    {% if product.stock_quantity > 0 %}
+                        <div class="flex items-center space-x-4">
+                            <label for="quantity" class="font-medium text-gray-700">Số lượng:</label>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}"
+                                   class="w-20 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <span class="text-sm text-gray-500">(Còn lại: {{ product.stock_quantity }} sản phẩm)</span>
+                        </div>
+                        
+                        <button onclick="addToCart()" 
+                                class="w-full bg-purple-600 text-white p-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-300 mt-4 text-lg">
+                            <i class="fas fa-shopping-cart mr-2"></i> Thêm vào Giỏ hàng
+                        </button>
+                    
+                    <!-- Hiển thị nếu hết hàng -->
+                    {% else %}
+                        <div class="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md">
+                            <h3 class="font-bold">Hết hàng</h3>
+                            <p>Sản phẩm này hiện đang hết hàng. Vui lòng quay lại sau.</p>
+                        </div>
+                        
+                        <button class="w-full bg-gray-400 text-white p-3 rounded-lg font-semibold mt-4 text-lg cursor-not-allowed" disabled>
+                            <i class="fas fa-shopping-cart mr-2"></i> Đã hết hàng
+                        </button>
+                    {% endif %}
+                    
+                    <div id="cart-message" class="text-center mt-3 font-medium"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mô tả chi tiết (Tab) -->
+        <div class="mt-10 pt-6 border-t border-gray-200">
+             <h2 class="text-2xl font-semibold text-gray-800">Mô tả chi tiết sản phẩm</h2>
+             <div class="mt-4 text-gray-600 leading-relaxed prose max-w-none">
+                {{ product.description | safe }}
+             </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block head %}
+<!-- Thêm script riêng cho trang này -->
+<script>
+    async function addToCart() {
+        const quantityInput = document.getElementById('quantity');
+        const messageArea = document.getElementById('cart-message');
+        
+        // Kiểm tra xem trường số lượng có tồn tại không (phòng trường hợp hết hàng)
+        if (!quantityInput) {
+            return;
+        }
+        
+        const quantity = parseInt(quantityInput.value, 10);
+        const productId = {{ product.id }}; 
+        const maxStock = parseInt(quantityInput.max, 10);
+
+        if (quantity < 1) {
+            messageArea.textContent = "Số lượng phải ít nhất là 1.";
+            messageArea.className = "text-center mt-3 font-medium text-red-600";
+            return;
+        }
+        
+        // Kiểm tra số lượng tối đa
+        if (quantity > maxStock) {
+            messageArea.textContent = `Trong kho chỉ còn tối đa ${maxStock} sản phẩm.`;
+            messageArea.className = "text-center mt-3 font-medium text-red-600";
+            return;
+        }
+
+        messageArea.textContent = "Đang thêm...";
+        messageArea.className = "text-center mt-3 font-medium text-gray-600";
+
+        try {
+            const response = await fetch("{{ url_for('shop.add_to_cart_api') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: quantity
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageArea.textContent = data.message;
+                messageArea.className = "text-center mt-3 font-medium text-green-600";
+                
+                // Cập nhật số lượng trên navbar (gọi hàm từ shop_base.html)
+                updateCartBadge(data.cart_total_items);
+                
+                // (Tùy chọn) Cập nhật số lượng tồn kho còn lại trên trang
+                const newStock = maxStock - quantity;
+                document.querySelector('.text-sm.text-gray-500').textContent = `(Còn lại: ${newStock} sản phẩm)`;
+                quantityInput.max = newStock;
+                quantityInput.value = 1; // Reset số lượng về 1
+
+            } else {
+                throw new Error(data.message || 'Lỗi không xác định');
+            }
+
+        } catch (error) {
+            messageArea.textContent = `Lỗi: ${error.message}`;
+            messageArea.className = "text-center mt-3 font-medium text-red-600";
+        }
+    }
+</script>
+{% endblock %}
+

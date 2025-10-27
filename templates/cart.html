@@ -1,0 +1,253 @@
+{% extends "shop_base.html" %}
+
+{% block title %}Giỏ Hàng Của Bạn{% endblock %}
+
+{% block content %}
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Giỏ Hàng Của Bạn</h1>
+
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        {% if items %}
+        <!-- Form để gửi các mục đã chọn đến trang checkout -->
+        <form id="cart-form" action="{{ url_for('shop.show_checkout_page') }}" method="POST">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <!-- CỘT MỚI: CHECKBOX -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <input type="checkbox" id="select-all-items" checked onchange="toggleSelectAll(this.checked)">
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản Phẩm</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tạm tính</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="cart-body">
+                        {% for item in items %}
+                        <!-- Thêm data-price vào <tr> -->
+                        <tr id="cart-item-{{ item.id }}" data-price="{{ item.price }}">
+                            <!-- CHECKBOX CHO TỪNG MỤC -->
+                            <td class="px-3 py-4 whitespace-nowrap text-center">
+                                <input type="checkbox" 
+                                       class="cart-item-select" 
+                                       name="selected_items" 
+                                       value="{{ item.id }}" 
+                                       onchange="updateGrandTotal()"
+                                       checked>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-16 w-16">
+                                        <img class="h-16 w-16 rounded-md object-cover" 
+                                             src="{{ url_for('quanlybanhang.serve_product_upload', filename=item.image_filename) }}" 
+                                             alt="{{ item.name }}">
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 price-cell">{{ "{:,.0f}đ".format(item.price) }}</td>
+                            
+                            <!-- CẬP NHẬT: Ô NHẬP SỐ LƯỢNG -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input type="number" 
+                                       class="cart-item-quantity w-20 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                       value="{{ item.quantity }}" 
+                                       min="1" 
+                                       max="{{ item.stock }}"
+                                       data-id="{{ item.id }}"
+                                       onchange="updateQuantity(this)">
+                                <div class="text-xs text-gray-400 mt-1">(Tồn kho: {{ item.stock }})</div>
+                            </td>
+                            
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 subtotal-cell">{{ "{:,.0f}đ".format(item.subtotal) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button type="button" onclick="removeItem({{ item.id }})" class="text-red-600 hover:text-red-900">Xóa</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tóm tắt (CẬP NHẬT: Chỉ tính các mục đã chọn) -->
+            <div class="mt-8 flex justify-end">
+                <div class="w-full md:w-1/3">
+                    <h2 class="text-lg font-medium text-gray-900">Tóm Tắt Giỏ Hàng</h2>
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
+                        <div class="flex justify-between font-bold text-xl">
+                            <span>Tổng cộng (Đã chọn)</span>
+                            <!-- ID MỚI cho tổng tiền -->
+                            <span id="cart-total-selected" class="text-purple-700">{{ "{:,.0f}đ".format(total) }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500">Phí vận chuyển sẽ được tính khi thanh toán.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between items-center">
+                <a href="{{ url_for('shop.show_shop_page') }}" class="text-purple-600 hover:underline">
+                    &larr; Tiếp tục mua hàng
+                </a>
+                <!-- NÚT MỚI: Submit form -->
+                <button type="submit" class="bg-purple-600 text-white p-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                    Thanh toán
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <!-- ... (Giữ nguyên giao diện giỏ hàng trống) ... -->
+        <div class="text-center py-10">
+            <i class="fas fa-shopping-cart fa-3x text-gray-300"></i>
+            <h2 class="mt-4 text-xl font-medium text-gray-700">Giỏ hàng của bạn đang trống</h2>
+            <p class="text-gray-500 mt-2">Hãy quay lại cửa hàng để chọn sản phẩm nhé.</p>
+            <a href="{{ url_for('shop.show_shop_page') }}" class="mt-6 inline-block bg-purple-600 text-white p-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                Quay lại Cửa hàng
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SCRIPT MỚI VÀ CẬP NHẬT -->
+    <script>
+        // --- HÀM MỚI ---
+        // Cập nhật số lượng khi người dùng thay đổi
+        async function updateQuantity(inputElement) {
+            const productId = inputElement.dataset.id;
+            let newQuantity = parseInt(inputElement.value, 10);
+            const maxStock = parseInt(inputElement.max, 10);
+
+            // Xác thực
+            if (newQuantity < 1) {
+                newQuantity = 1;
+                inputElement.value = 1;
+            }
+            if (newQuantity > maxStock) {
+                newQuantity = maxStock;
+                inputElement.value = maxStock;
+                alert(`Trong kho chỉ còn tối đa ${maxStock} sản phẩm.`);
+            }
+
+            try {
+                const response = await fetch("{{ url_for('shop.update_cart_quantity_api') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: newQuantity
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Cập nhật lại Tạm tính của hàng này
+                    const row = document.getElementById(`cart-item-${productId}`);
+                    const price = parseFloat(row.dataset.price);
+                    const subtotal = data.subtotal;
+                    row.querySelector('.subtotal-cell').textContent = formatCurrency(subtotal);
+                    
+                    // Cập nhật lại Tổng tiền (chỉ các mục đã chọn)
+                    updateGrandTotal();
+                    
+                    // Cập nhật icon giỏ hàng trên navbar
+                    updateCartBadge(data.cart_total_items);
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+
+            } catch (error) {
+                alert(`Lỗi: ${error.message}`);
+                // Hoàn tác lại giá trị cũ (nếu cần)
+            }
+        }
+        
+        // --- HÀM MỚI ---
+        // Tính toán lại tổng tiền dựa trên các mục đã chọn
+        function updateGrandTotal() {
+            let grandTotal = 0;
+            const rows = document.querySelectorAll("#cart-body tr");
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector(".cart-item-select");
+                if (checkbox && checkbox.checked) {
+                    const price = parseFloat(row.dataset.price);
+                    const quantity = parseInt(row.querySelector(".cart-item-quantity").value, 10);
+                    grandTotal += price * quantity;
+                }
+            });
+            
+            document.getElementById("cart-total-selected").textContent = formatCurrency(grandTotal);
+        }
+        
+        // --- HÀM MỚI ---
+        // Chọn/Bỏ chọn tất cả
+        function toggleSelectAll(checked) {
+            document.querySelectorAll(".cart-item-select").forEach(checkbox => {
+                checkbox.checked = checked;
+            });
+            updateGrandTotal();
+        }
+
+        // --- HÀM MỚI ---
+        // Định dạng tiền tệ (Helper)
+        function formatCurrency(amount) {
+            return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }).replace('₫', 'đ');
+        }
+
+        // --- HÀM CẬP NHẬT ---
+        // Xóa sản phẩm
+        async function removeItem(productId) {
+            if (!confirm('Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch("{{ url_for('shop.remove_from_cart_api') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById(`cart-item-${productId}`).remove();
+                    
+                    // Cập nhật lại tổng tiền (vì một mục đã bị xóa)
+                    updateGrandTotal();
+                    
+                    updateCartBadge(data.cart_total_items);
+                    
+                    if (data.cart_total_items === 0) {
+                        window.location.reload(); 
+                    }
+                    
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định');
+                }
+
+            } catch (error) {
+                alert(`Lỗi: ${error.message}`);
+            }
+        }
+        
+        // Chạy lần đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGrandTotal();
+            
+            // Thêm listener để bỏ check "Select All" nếu một mục bị bỏ check
+            document.querySelectorAll(".cart-item-select").forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    if (!checkbox.checked) {
+                        document.getElementById("select-all-items").checked = false;
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
+

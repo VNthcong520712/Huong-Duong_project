@@ -1,0 +1,98 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Cài Đặt - Quản Lý{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    
+    <!-- Thông báo đã được chuyển lên admin_base.html -->
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Form 1: Cài đặt Liên hệ -->
+        <div class="bg-white p-8 rounded-lg shadow-xl">
+            <!-- ... (Giữ nguyên nội dung form) ... -->
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Thông Tin Liên Hệ (Shop)</h1>
+            <form action="{{ url_for('quanlybanhang.settings_page') }}" method="POST" class="space-y-4">
+                <!-- Trường ẩn để xác định form -->
+                <input type="hidden" name="form_type" value="contact">
+                
+                <div>
+                    <label for="project_info" class="block text-sm font-medium text-gray-700">Thông tin dự án/mô tả shop</label>
+                    <textarea name="project_info" id="project_info" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">{{ info.project_info or '' }}</textarea>
+                </div>
+                
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Số điện thoại (liên hệ)</label>
+                    <input type="tel" name="phone" id="phone" value="{{ info.phone or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email (liên hệ)</label>
+                    <input type="email" name="email" id="email" value="{{ info.email or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label for="facebook" class="block text-sm font-medium text-gray-700">Link Facebook</label>
+                    <input type="url" name="facebook" id="facebook" value="{{ info.facebook or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors h-12">
+                    Lưu Thông Tin Liên Hệ
+                </button>
+            </form>
+        </div>
+
+        <!-- MỚI: Form 2: Cài đặt Thanh toán (Ngân hàng/QR) -->
+        <div class="bg-white p-8 rounded-lg shadow-xl">
+            <!-- ... (Giữ nguyên nội dung form) ... -->
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Thông Tin Thanh Toán (Chuyển khoản)</h1>
+            
+            <form action="{{ url_for('quanlybanhang.settings_page') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <!-- Trường ẩn để xác định form -->
+                <input type="hidden" name="form_type" value="payment">
+                
+                <div>
+                    <label for="bank_name" class="block text-sm font-medium text-gray-700">Tên Ngân Hàng</label>
+                    <input type="text" name="bank_name" id="bank_name" value="{{ payment_info.bank_name or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div>
+                    <label for="account_holder" class="block text-sm font-medium text-gray-700">Tên Chủ Tài Khoản</label>
+                    <input type="text" name="account_holder" id="account_holder" value="{{ payment_info.account_holder or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label for="account_number" class="block text-sm font-medium text-gray-700">Số Tài Khoản</label>
+                    <input type="text" name="account_number" id="account_number" value="{{ payment_info.account_number or '' }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <hr>
+                
+                <div>
+                    <label for="qr_image" class="block text-sm font-medium text-gray-700">Ảnh Mã QR</label>
+                    
+                    <!-- Hiển thị QR hiện tại (nếu có) -->
+                    {% if payment_info and payment_info.qr_code_filename %}
+                    <div class="my-2">
+                        <p class="text-xs text-gray-500 mb-1">QR Hiện tại:</p>
+                        <img src="{{ url_for('quanlybanhang.serve_payment_upload', filename=payment_info.qr_code_filename) }}" 
+                             alt="Mã QR" 
+                             class="w-32 h-32 rounded-md border p-1">
+                    </div>
+                    {% endif %}
+                    
+                    <input type="file" name="qr_image" id="qr_image" accept="image/png, image/jpeg, image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <p class="text-xs text-gray-500 mt-1">Tải lên ảnh mới sẽ thay thế ảnh cũ (nếu có).</p>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition-colors h-12">
+                    Lưu Thông Tin Thanh Toán
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+

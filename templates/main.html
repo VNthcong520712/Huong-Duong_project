@@ -1,0 +1,83 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Trang Chính - Quản Lý{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white p-8 rounded-lg shadow-xl">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Chào mừng, Admin!</h1>
+            <p class="text-gray-600 mb-6">Đây là Bảng điều khiển Quản lý của bạn. Vui lòng chọn một tác vụ từ thanh điều hướng bên trên.</p>
+            
+            <!-- Thêm các shortcut (lối tắt) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <a href="{{ url_for('quanlybanhang.messages_page') }}" class="block p-6 bg-purple-50 hover:bg-purple-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-envelope-open-text fa-2x text-purple-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-purple-800">Tin Nhắn</h2>
+                            <p class="text-purple-700">Xem phản hồi từ khách hàng</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('quanlybanhang.transaction_page') }}" class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-file-invoice-dollar fa-2x text-green-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-green-800">Giao Dịch</h2>
+                            <p class="text-green-700">Quản lý đơn hàng</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- *** START: THÊM LỐI TẮT THỐNG KÊ *** -->
+                <a href="{{ url_for('quanlybanhang.statistics_page') }}" class="block p-6 bg-red-50 hover:bg-red-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <!-- Biểu tượng biểu đồ cột -->
+                        <i class="fas fa-chart-bar fa-2x text-red-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-red-800">Thống Kê</h2>
+                            <p class="text-red-700">Xem báo cáo doanh thu</p>
+                        </div>
+                    </div>
+                </a>
+                <!-- *** END: THÊM LỐI TẮT THỐNG KÊ *** -->
+
+                <a href="{{ url_for('quanlybanhang.products_page') }}" class="block p-6 bg-blue-50 hover:bg-blue-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-box-open fa-2x text-blue-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-blue-800">Sản Phẩm</h2>
+                            <p class="text-blue-700">Thêm, xóa, sửa sản phẩm</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('quanlybanhang.gallery_page') }}" class="block p-6 bg-yellow-50 hover:bg-yellow-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-images fa-2x text-yellow-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-yellow-800">Thư Viện Ảnh</h2>
+                            <p class="text-yellow-700">Quản lý ảnh Shop Galery</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('quanlybanhang.settings_page') }}" class="block p-6 bg-gray-50 hover:bg-gray-100 rounded-lg shadow-md transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-cogs fa-2x text-gray-600"></i>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Cài Đặt</h2>
+                            <p class="text-gray-700">Thông tin liên hệ & thanh toán</p>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
