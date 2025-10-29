@@ -10,6 +10,7 @@
 
     <!-- Nội dung chi tiết sản phẩm -->
     <div class="bg-white p-8 rounded-lg shadow-xl">
+        <!-- CẬP NHẬT: Layout này đã responsive (md:grid-cols-2) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
             <!-- Cột bên trái: Hình ảnh -->
@@ -33,28 +34,26 @@
             <div class="flex flex-col justify-between">
                 <div>
                     <!-- Tên sản phẩm -->
-                    <h1 class="text-4xl font-bold text-gray-900">{{ product.name }}</h1>
+                    <!-- CẬP NHẬT: Thay đổi kích thước chữ cho responsive -->
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ product.name }}</h1>
                     
                     <!-- Giá -->
                     <p class="mt-4 text-3xl font-bold text-purple-700">
                         {{ "{:,.0f}đ".format(product.price) }}
                     </p>
                     
-                    <!-- Mô tả ngắn (Mô phỏng theo các trang e-commerce) -->
-                    <!-- <p class="mt-4 text-gray-600 leading-relaxed">
-                        {{ product.description | truncate(150, True) }}
-                    </p> -->
                 </div>
                 
                 <!-- Khu vực Thêm vào giỏ (CẬP NHẬT) -->
                 <div class="mt-8">
                     <!-- Chỉ hiển thị nếu còn hàng -->
                     {% if product.stock_quantity > 0 %}
-                        <div class="flex items-center space-x-4">
+                        <!-- CẬP NHẬT: flex-wrap cho màn hình nhỏ -->
+                        <div class="flex items-center space-x-4 flex-wrap">
                             <label for="quantity" class="font-medium text-gray-700">Số lượng:</label>
                             <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}"
                                    class="w-20 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <span class="text-sm text-gray-500">(Còn lại: {{ product.stock_quantity }} sản phẩm)</span>
+                            <span class="text-sm text-gray-500 mt-2 sm:mt-0">(Còn lại: {{ product.stock_quantity }} sản phẩm)</span>
                         </div>
                         
                         <button onclick="addToCart()" 
@@ -142,7 +141,11 @@
                 
                 // (Tùy chọn) Cập nhật số lượng tồn kho còn lại trên trang
                 const newStock = maxStock - quantity;
-                document.querySelector('.text-sm.text-gray-500').textContent = `(Còn lại: ${newStock} sản phẩm)`;
+                // Cập nhật span hiển thị số lượng còn lại
+                const stockSpan = document.querySelector('span.text-sm.text-gray-500');
+                if (stockSpan) {
+                    stockSpan.textContent = `(Còn lại: ${newStock} sản phẩm)`;
+                }
                 quantityInput.max = newStock;
                 quantityInput.value = 1; // Reset số lượng về 1
 
@@ -157,4 +160,3 @@
     }
 </script>
 {% endblock %}
-

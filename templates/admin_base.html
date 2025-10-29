@@ -24,7 +24,9 @@
                 </div>
                 <!-- Kiểm tra request.path để highlight tab hiện tại -->
                 {% set active_page = request.path %}
-                <div class="flex items-center space-x-4">
+                
+                <!-- Menu Desktop (Ẩn trên mobile) -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-4">
                     <a href="{{ url_for('quanlybanhang.main_page') }}" 
                        class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.main_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Trang Chính</a>
                     
@@ -34,10 +36,8 @@
                     <a href="{{ url_for('quanlybanhang.transaction_page') }}" 
                        class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.transaction_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Giao Dịch</a>
                     
-                    <!-- *** START: THÊM LINK MỚI *** -->
                     <a href="{{ url_for('quanlybanhang.statistics_page') }}" 
                        class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.statistics_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Thống Kê</a>
-                    <!-- *** END: THÊM LINK MỚI *** -->
                     
                     <a href="{{ url_for('quanlybanhang.products_page') }}" 
                        class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.products_page') else '' }} hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Sản Phẩm</a>
@@ -50,6 +50,37 @@
                     
                     <a href="{{ url_for('quanlybanhang.logout') }}" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium">Đăng xuất</a>
                 </div>
+
+                <!-- MỚI: Nút Hamburger (Mobile) -->
+                <div class="sm:hidden flex items-center">
+                    <button id="admin-mobile-menu-button" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-indigo-200 hover:text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="admin-mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Icon hamburger (khi đóng) -->
+                        <svg id="admin-hamburger-open" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Icon close (khi mở) -->
+                        <svg id="admin-hamburger-close" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MỚI: Menu Mobile (Thả xuống) -->
+        <div class="sm:hidden hidden" id="admin-mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{{ url_for('quanlybanhang.main_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.main_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Trang Chính</a>
+                <a href="{{ url_for('quanlybanhang.messages_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.messages_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Tin Nhắn</a>
+                <a href="{{ url_for('quanlybanhang.transaction_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.transaction_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Giao Dịch</a>
+                <a href="{{ url_for('quanlybanhang.statistics_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.statistics_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Thống Kê</a>
+                <a href="{{ url_for('quanlybanhang.products_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.products_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Sản Phẩm</a>
+                <a href="{{ url_for('quanlybanhang.gallery_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.gallery_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Thư Viện Ảnh</a>
+                <a href="{{ url_for('quanlybanhang.settings_page') }}" class="{{ 'bg-indigo-700' if active_page == url_for('quanlybanhang.settings_page') else '' }} text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-indigo-700">Cài Đặt</a>
+                <hr class="border-indigo-500 my-2">
+                <a href="{{ url_for('quanlybanhang.logout') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Đăng xuất</a>
             </div>
         </div>
     </nav>
@@ -77,5 +108,54 @@
     <!-- Script chung (nếu cần) -->
     {% block scripts %}
     {% endblock %}
+
+    <!-- SỬA LỖI: Chuyển Script menu mobile ra ngoài block -->
+    <script>
+        // --- MỚI: Script cho menu Mobile Admin ---
+        // (Sử dụng ID khác với shop_base để tránh xung đột nếu có)
+        const adminMenuButton = document.getElementById('admin-mobile-menu-button');
+        const adminMobileMenu = document.getElementById('admin-mobile-menu');
+        const adminIconOpen = document.getElementById('admin-hamburger-open');
+        const adminIconClose = document.getElementById('admin-hamburger-close');
+
+        if (adminMenuButton && adminMobileMenu && adminIconOpen && adminIconClose) {
+            adminMenuButton.addEventListener('click', () => {
+                const isExpanded = adminMenuButton.getAttribute('aria-expanded') === 'true';
+                adminMenuButton.setAttribute('aria-expanded', !isExpanded);
+                adminMobileMenu.classList.toggle('hidden');
+                adminIconOpen.classList.toggle('hidden');
+                adminIconClose.classList.toggle('hidden');
+            });
+        }
+    </script>
+
+    <!-- MỚI: Script chặn Inspect Element -->
+    <script>
+        // Chặn click chuột phải
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Chặn các phím tắt mở DevTools
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode == 123) {
+                e.preventDefault();
+            }
+            // Ctrl + Shift + I
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) { // 73 is 'I'
+                e.preventDefault();
+            }
+            // Ctrl + Shift + J
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) { // 74 is 'J'
+                e.preventDefault();
+            }
+            // Ctrl + U
+            if (e.ctrlKey && e.keyCode == 85) { // 85 is 'U'
+                e.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>
+

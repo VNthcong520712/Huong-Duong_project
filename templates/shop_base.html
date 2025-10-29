@@ -15,7 +15,8 @@
         
         /* CSS cho ảnh bìa (header image) */
         #header-image-container {
-            height: 40vh; /* Chiều cao ảnh bìa */
+            /* Mặc định là 40vh, nhưng sẽ bị ghi đè bởi class h- (ví dụ h-48 sm:h-64) */
+            height: 40vh; 
             background-image: url('https://placehold.co/1920x600/8b5cf6/ffffff?text=Hinh+Nen+Cua+Shop');
             background-size: cover;
             background-position: center;
@@ -67,9 +68,9 @@
 <body class="bg-gray-100">
 
     <!-- 1. ẢNH BÌA (HEADER) -->
-    <!-- 1. ẢNH BÌA (HEADER) -->
+    <!-- CẬP NHẬT: Đổi h-64 thành h-48 sm:h-64 để nhỏ hơn trên mobile -->
 	<header id="header-image-container"
-			class="w-full h-64 bg-center bg-cover"
+			class="w-full h-48 sm:h-64 bg-center bg-cover"
 			style="background-image: url('{{ url_for('static', filename='banner.jpg') }}');">
 		<!-- Có thể thêm Tiêu đề hoặc Slogan ở đây nếu muốn -->
 	</header>
@@ -86,7 +87,7 @@
                     </a>
                 </div>
                 
-                <!-- Menu (ĐÃ CẬP NHẬT THEO YÊU CẦU) -->
+                <!-- Menu (Desktop) - Ẩn trên mobile (sm) -->
                 <div class="hidden sm:flex sm:items-center sm:space-x-6">
                     <a href="{{ url_for('shop.show_shop_page') }}" 
                        class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-md">
@@ -102,10 +103,10 @@
                     </a>
                 </div>
 
-                <!-- Giỏ hàng & Admin (CẬP NHẬT LIÊN KẾT GIỎ HÀNG) -->
-                <div class="flex items-center space-x-4">
+                <!-- Giỏ hàng & Admin (Desktop) - Ẩn trên mobile (sm) -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-4">
 
-					<!-- MỚI: LINK LỊCH SỬ ĐƠN HÀNG (Chỉ hiển thị khi là khách hàng) -->
+					<!-- LINK LỊCH SỬ ĐƠN HÀNG (Desktop) -->
                     {% if session['user_id'] and not session['is_admin'] %}
                         <a href="{{ url_for('shop.order_history_page') }}" class="flex items-center text-gray-700 hover:text-purple-600" title="Đơn hàng của tôi">
                             <i class="fas fa-history fa-fw"></i>
@@ -113,7 +114,7 @@
                         </a>
                     {% endif %}
 
-                    <!-- Liên kết đến trang Giỏ hàng mới -->
+                    <!-- Giỏ hàng (Desktop) -->
                     <a href="{{ url_for('shop.show_cart_page') }}" class="flex items-center text-gray-700 hover:text-purple-600">
                         <i class="fas fa-shopping-cart fa-fw"></i>
                         <span class="ml-1">Giỏ hàng</span>
@@ -122,7 +123,7 @@
                         </span>
                     </a>
 
-          			<!-- Link Đăng nhập/Admin -->
+          			<!-- Link Đăng nhập/Admin (Desktop) -->
                     {% if session['user_id'] %}
                         {% if session['is_admin'] %}
                             <a href="{{ url_for('quanlybanhang.main_page') }}" class="text-sm text-gray-500 hover:text-purple-600" title="Trang Quản trị">
@@ -139,19 +140,82 @@
                         </a>
                     {% endif %}
                 </div>
+
+                <!-- MỚI: Nút Hamburger & Giỏ hàng (Mobile) - Hiển thị trên mobile (sm:hidden) -->
+                <div class="sm:hidden flex items-center space-x-3">
+                    <!-- Giỏ hàng (Mobile) -->
+                    <a href="{{ url_for('shop.show_cart_page') }}" class="flex items-center text-gray-700 hover:text-purple-600">
+                        <i class="fas fa-shopping-cart fa-fw"></i>
+                        <!-- Badge cho mobile -->
+                        <span id="cart-count-badge-mobile" class="ml-1 bg-purple-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                            {{ cart_total_items }}
+                        </span>
+                    </a>
+                    
+                    <!-- Nút Hamburger -->
+                    <button id="mobile-menu-button" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-purple-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Icon hamburger (khi đóng) -->
+                        <svg id="hamburger-icon-open" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Icon close (khi mở) -->
+                        <svg id="hamburger-icon-close" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MỚI: Menu Mobile (Thả xuống) -->
+        <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{{ url_for('shop.show_shop_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-gray-50">SHOP</a>
+                <a href="{{ url_for('shop.pages_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">GALLERY</a>
+                <a href="{{ url_for('shop.contact_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">CONTACT</a>
+                
+                <hr class="border-gray-200 my-2">
+
+                <!-- LINK LỊCH SỬ ĐƠN HÀNG (Mobile) -->
+                {% if session['user_id'] and not session['is_admin'] %}
+                    <a href="{{ url_for('shop.order_history_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">
+                        Đơn hàng của tôi
+                    </a>
+                {% endif %}
+
+                <!-- Link Đăng nhập/Admin (Mobile) -->
+                {% if session['user_id'] %}
+                    {% if session['is_admin'] %}
+                        <a href="{{ url_for('quanlybanhang.main_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">
+                            Trang Quản trị
+                        </a>
+                    {% else %}
+                         <a href="{{ url_for('quanlybanhang.logout') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">
+                            Đăng xuất
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('quanlybanhang.show_login_page') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-purple-600 hover:bg-gray-50">
+                       Đăng nhập
+                    </a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
     <!-- 3. NỘI DUNG CHÍNH (SIDEBAR + CONTENT) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+        <!-- CẬP NHẬT: Đổi từ flex-col sang lg:flex-row (đã có) -->
         <div class="flex flex-col lg:flex-row lg:space-x-8">
             
-            <!-- SIDEBAR (Bên trái) (CẬP NHẬT: Thêm form tìm kiếm) -->
+            <!-- SIDEBAR (Bên trái) -->
             <aside class="w-full lg:w-1/4">
-                <div class="sticky top-20 space-y-6">
+                <!-- CẬP NHẬT: Chỉ 'sticky' trên màn hình lớn (lg) -->
+                <div class="lg:sticky lg:top-20 space-y-6">
                     
-                    <!-- MỚI: Form Tìm Kiếm -->
+                    <!-- Form Tìm Kiếm -->
                     <div class="bg-white p-6 rounded-lg shadow-lg">
                         <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Tìm Kiếm Sản Phẩm</h3>
                         <!-- Form trỏ về trang chủ shop (GET) -->
@@ -169,16 +233,8 @@
                         </form>
                     </div>
 
-                    <!-- Danh Mục Sản Phẩm (Giữ nguyên) -->
-                    <!-- <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Danh Mục</h3>
-                        <nav class="space-y-2">
-                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Spa & Thư Giãn</a>
-                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Chăm Sóc Da</a>
-                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Nến & Tinh Dầu</a>
-                            <a href="#" class="block text-gray-600 hover:text-purple-600 font-medium">Quà Tặng</a>
-                        </nav>
-                    </div> -->
+                    <!-- Danh Mục (ví dụ) -->
+                    <!-- <div class="bg-white p-6 rounded-lg shadow-lg"> ... </div> -->
                 </div>
             </aside>
             
@@ -213,11 +269,16 @@
 
     <!-- Script chung -->
     <script>
-        // Hàm cập nhật số lượng giỏ hàng trên navbar
+        // CẬP NHẬT: Hàm cập nhật cả 2 badge (desktop và mobile)
         function updateCartBadge(newCount) {
-            const badge = document.getElementById('cart-count-badge');
-            if (badge) {
-                badge.textContent = newCount;
+            const badgeDesktop = document.getElementById('cart-count-badge');
+            const badgeMobile = document.getElementById('cart-count-badge-mobile');
+            
+            if (badgeDesktop) {
+                badgeDesktop.textContent = newCount;
+            }
+            if (badgeMobile) {
+                badgeMobile.textContent = newCount;
             }
         }
         
@@ -230,6 +291,50 @@
                 headerImage.style.opacity = opacity;
             } else {
                 headerImage.style.opacity = 0;
+            }
+        });
+
+        // --- MỚI: Script cho menu Mobile Shop ---
+        const shopMenuButton = document.getElementById('shop-mobile-menu-button');
+        const shopMobileMenu = document.getElementById('shop-mobile-menu');
+        const shopIconOpen = document.getElementById('shop-hamburger-open');
+        const shopIconClose = document.getElementById('shop-hamburger-close');
+
+        if (shopMenuButton && shopMobileMenu && shopIconOpen && shopIconClose) {
+            shopMenuButton.addEventListener('click', () => {
+                const isExpanded = shopMenuButton.getAttribute('aria-expanded') === 'true';
+                shopMenuButton.setAttribute('aria-expanded', !isExpanded);
+                shopMobileMenu.classList.toggle('hidden');
+                shopIconOpen.classList.toggle('hidden');
+                shopIconClose.classList.toggle('hidden');
+            });
+        }
+    </script>
+
+    <!-- MỚI: Script chặn Inspect Element -->
+    <script>
+        // Chặn click chuột phải
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Chặn các phím tắt mở DevTools
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode == 123) {
+                e.preventDefault();
+            }
+            // Ctrl + Shift + I
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) { // 73 is 'I'
+                e.preventDefault();
+            }
+            // Ctrl + Shift + J
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) { // 74 is 'J'
+                e.preventDefault();
+            }
+            // Ctrl + U
+            if (e.ctrlKey && e.keyCode == 85) { // 85 is 'U'
+                e.preventDefault();
             }
         });
     </script>
