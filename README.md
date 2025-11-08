@@ -1,152 +1,89 @@
-# Huong Duong (Sunflower) Project
+# Huong Duong Project
 
-Huong Duong is an e-commerce web application built to support a social-enterprise initiative selling handmade knitted and crocheted crafts created by people with disabilities. The site connects artisans with customers, provides an accessible shopping experience, and helps create sustainable income and dignity for contributors.
+Short description
+-----------------
+This repository contains a small web project for the Huong Duong site. The project serves HTML pages (with CSS and JavaScript) and is backed by a local database. The server is implemented in Python. The live domain name for the project is: duanhuongduong.shop.
 
-## Table of Contents
-- [Mission](#mission)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
-- [Demo / Screenshots](#demo--screenshots)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Run Locally](#run-locally)
-- [Usage](#usage)
-- [How to Support the Artisans](#how-to-support-the-artisans)
-- [Accessibility & Social Impact](#accessibility--social-impact)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+What this project includes
+--------------------------
+- A Python-based server (simple backend to serve pages / APIs).
+- Front-end pages written in HTML, with CSS and JavaScript for styling and behavior.
+- A local database for application data (default: SQLite or another local DB you choose).
+- Configuration ready to point the domain duanhuongduong.shop to the server.
 
-## Mission
-To empower people with disabilities by creating a marketplace for handcrafted yarn-based products. Huong Duong promotes economic inclusion, preserves handicraft skills, and raises awareness about the abilities and potential of artisans with disabilities.
+Quick start (developer)
+-----------------------
+1. Clone the repository
+   git clone https://github.com/VNthcong520712/Huong-Duong_project.git
+   cd Huong-Duong_project
 
-## Key Features
-- Product catalog with categories and search
-- Product pages with photos, descriptions, price, and artisan profile
-- Shopping cart and checkout flow
-- Vendor / artisan profiles and stories
-- Admin dashboard for product and order management
-- Order tracking and email notifications
-- Basic analytics for sales and impact reporting
-- Accessibility features: keyboard navigation, ARIA labels, readable contrast
-- Responsive layout for desktop and mobile
-- (Optional) Multi-language support
+2. Create and activate a Python virtual environment
+   python3 -m venv .venv
+   source .venv/bin/activate   # macOS / Linux
+   .venv\Scripts\activate      # Windows (PowerShell/CMD)
 
-## Tech Stack
-Replace these with the actual stack used in the repository:
-- Frontend: React / Vue / plain HTML + CSS (replace as appropriate)
-- Backend: Node.js + Express / Django / Laravel / Flask (replace as appropriate)
-- Database: PostgreSQL / MySQL / SQLite / MongoDB (replace)
-- Authentication: JWT / OAuth / Session-based (replace)
-- Payments: Stripe / PayPal (optional)
-- Deployment: Vercel / Netlify / Heroku / Docker
+3. Install dependencies (if a requirements file exists)
+   pip install -r requirements.txt
+   If there is no requirements.txt, install the packages your server uses (Flask, Django, etc.) as needed:
+   pip install flask
+   or
+   pip install django
 
-## Demo / Screenshots
-Add screenshots or a link to a live demo here:
-- Live demo: https://your-live-site.example.com (replace)
-- Screenshots: /docs/screenshots/*.png (add files to the repo)
+4. Configure the app (replace filenames / env vars below with actual ones)
+   - If the project uses environment variables, set them:
+     export APP_ENV=development
+     export SECRET_KEY="your-secret-key"
+   - If the project uses a specific server file, run that file. Common examples:
+     python app.py
+     python server.py
+   - If using Flask (example):
+     export FLASK_APP=app.py
+     flask run --host=0.0.0.0 --port=8000
+   - For a very simple static file server (if applicable):
+     python -m http.server 8000
 
-## Getting Started
+5. Database (local)
+   - By default the project uses a local DB. If using SQLite, a file like `data/database.db` will be used/created.
+   - If you have an initialization/migration script, run it:
+     python scripts/init_db.py
+     or
+     python manage.py migrate   # for Django projects
+   - If no DB init script exists, starting the server may auto-create the database file.
 
-### Prerequisites
-- Git
-- Node.js and npm (if using Node)
-- Python + pip (if using Django/Flask)
-- Docker (optional)
-- A database server (Postgres, MySQL, or SQLite for local development)
+6. Accessing the site
+   - Locally: http://localhost:8000 (replace port if different)
+   - With a public server and DNS configured: https://duanhuongduong.shop (ensure DNS A/AAAA record points to your server IP and TLS is configured)
 
-### Installation
-Clone the repository:
-```bash
-git clone https://github.com/VNthcong520712/Huong-Duong_project.git
-cd Huong-Duong_project
-```
+Domain & TLS
+------------
+- The project domain is: duanhuongduong.shop
+- Point an A record from duanhuongduong.shop to your server's public IP address.
+- Use a reverse proxy (Nginx) and a process manager (Gunicorn, systemd) for production.
+- Obtain a TLS certificate from Let's Encrypt (certbot) and configure HTTPS for the domain.
 
-Install dependencies (example for Node.js):
-```bash
-# from project root
-npm install
-```
+Security & deployment notes
+---------------------------
+- Keep the SECRET_KEY and other secrets out of version control (use environment variables or a secrets store).
+- Do not expose your local database file publicly — use proper file permissions and firewall rules.
+- For production, use a WSGI server (Gunicorn/uWSGI) behind Nginx. Consider containerization (Docker) for easier deployment.
+- Regularly back up the local database.
 
-Or for a Python/Django project:
-```bash
-python -m venv venv
-source venv/bin/activate  # macOS / Linux
-venv\Scripts\activate     # Windows
-pip install -r requirements.txt
-```
+Project structure (example)
+---------------------------
+- /templates or /www  — HTML files (front-end)
+- /static            — CSS and JavaScript files
+- app.py / server.py — Python server entry point
+- requirements.txt   — Python dependencies (optional)
+- data/              — local database files (e.g. SQLite db)
+- scripts/           — helper scripts (db init, migrations)
 
-### Environment Variables
-Create a `.env` file in the project root and add required environment variables. Example variables (customize for your stack):
-```
-# Example
-PORT=3000
-DATABASE_URL=postgres://user:password@localhost:5432/huongduong
-SECRET_KEY=replace_with_a_secure_key
-STRIPE_SECRET_KEY=sk_test_xxx
-SMTP_HOST=smtp.example.com
-SMTP_USER=example@example.com
-SMTP_PASS=supersecret
-```
+How you can help improve this README
+------------------------------------
+- Tell me the exact Python entrypoint filename (for example `app.py`, `server.py`, or Django `manage.py`) and I will update the “Quick start” commands to be exact.
+- If you use a specific framework (Flask, Django, FastAPI, etc.), tell me and I'll add framework-specific setup and examples (migrations, run commands, typical environment variables).
+- If you already have a requirements.txt, init scripts, or a preferred production setup (nginx+gunicorn, Dockerfile), share them and I will include customized instructions.
 
-### Run Locally
-
-For Node.js / Express (example):
-```bash
-npm run dev          # or: npm start
-```
-
-For a Django project:
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-Or using Docker Compose if a docker-compose.yml is provided:
-```bash
-docker-compose up --build
-```
-
-Open http://localhost:3000 or http://127.0.0.1:8000 in your browser (depending on the port).
-
-## Usage
-- Browse products and artisan profiles
-- Add items to cart and checkout
-- Admins can add products, manage orders, and view simple impact metrics
-- Use the artisan profile pages to learn about each maker and their story
-
-## How to Support the Artisans
-- Purchase items from the shop
-- Share the project on social media
-- Donate materials or funds
-- Volunteer time to help with training, product photography, or order fulfillment
-- Partner with local businesses to showcase and sell products offline
-
-## Accessibility & Social Impact
-This project aims to be accessible and inclusive:
-- Semantic HTML and ARIA attributes
-- Keyboard navigable UI
-- Clear focus states and high color contrast
-- Simple language and readable layout to accommodate different needs
-
-The social impact goal is to provide predictable income, upskill artisans, and increase community awareness about disability inclusion.
-
-## Contributing
-Contributions are welcome. Suggested workflow:
-1. Fork the repository
-2. Create a feature branch: git checkout -b feature/your-feature
-3. Make changes and add tests
-4. Commit and push: git push origin feature/your-feature
-5. Open a Pull Request explaining the change and its purpose
-
-Please follow the coding standards used in the project and include a short description of your changes in the PR.
-
-## License
-This repository is offered under the MIT License. Replace with the correct license file if different.
-
-## Contact
-Project owner: VNthcong520712  
-GitHub: https://github.com/VNthcong520712
+Contact
+-------
+Maintainer: VNthcong520712
+Repository: https://github.com/VNthcong520712/Huong-Duong_project
